@@ -4,8 +4,8 @@ body, html {
     margin: 0;
     padding: 0;
     overflow: hidden;
-    background-color: #000;
-    color: #fff;
+    background-color: #fff;
+    color: #000;
 }
 
 #game {
@@ -14,4 +14,6 @@ body, html {
     left: 0;
     right: 0;
     bottom: 0;
+    width: 100%;
+    height: 100%;
 }
