@@ -1,14 +1,27 @@
 import "./style.scss";
-import SFX, { Channel, Sound } from "./sfx";
-import { Vec3, Camera, Shader, Mesh, Item, Box, Sphere } from "./T3D/index";
+import { Vec3, Camera, Shader, Mesh, Item, Box, Sphere, RAD_SCALE } from "./T3D/index";
 import { on, $ } from "./common";
+import GameScene from "./Game/GameScene";
+import Hero from "./Game/Hero";
 
 const canvas = <HTMLCanvasElement>$("#game");
 const gl = canvas.getContext("webgl");
-const light = new Vec3(5, 15, 7);
+const light = new Vec3(0, 0, -5);
 const camera = new Camera(canvas.width / canvas.height);
+//camera.rotate.x = RAD_SCALE;
+camera.position.set(0, 0, 5);
+
 const shader = new Shader(gl, require("./shader/vert.glsl?t=vertex"), require("./shader/frag.glsl"));
-const scene = new Item();
+const meshes = {
+    sphere: new Mesh(gl, 20),
+};
+const colors = {
+    red: [1, .3, .3, 0],
+};
+const hero = new Hero(meshes.sphere, colors.red);
+const scene = new GameScene(hero);
+// camera.position = hero.transform.translate;
+// camera.rotate = hero.transform.rotate;
 
 function render(item: Item, stroke: number = 0) {
     item.childs.forEach(child => {
@@ -18,9 +31,6 @@ function render(item: Item, stroke: number = 0) {
         return;
     }
     const invert = item.transform.matrix().invert();
-    if (!invert) {
-        return;
-    }
     gl.cullFace(stroke > 0 ? gl.FRONT : gl.BACK);
     gl.useProgram(shader.program);
     shader.attrib("aPos", item.mesh.verts, 3)
@@ -51,23 +61,8 @@ function bind() {
     on(window, "resize", resize);
 }
 
-on(document, "click", async () => {
-    const body = document.body;
-    if (body.className) {
-        return;
-    }
-    body.className = "load";
+on(window, "load", async () => {
     resize();
-    await SFX.init();
-    await Promise.all([
-        SFX.sound("exp", new Sound("custom", [5, 1, 0], 1), [220, 0], 1),
-        SFX.sound("hit", new Sound("custom", [3, 1, 0], 1), [1760, 0], .3),
-        SFX.sound("power", new Sound("square", [.5, .1, 0], 1), [440, 880, 440, 880, 440, 880, 440, 880], .3),
-        SFX.sound("jump", new Sound("triangle", [.5, .1, 0], 1), [220, 880], .1),
-        SFX.sound("coin", new Sound("square", [.2, .1, 0], .2), [1760, 1760], .2),
-        SFX.sound("move", new Sound("custom", [.1, .5, 0], .3), [1760, 440], .3),
-    ]);
     bind();
     update();
-    body.className = "run";
 });
