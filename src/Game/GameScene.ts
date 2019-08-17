@@ -1,32 +1,32 @@
 import Hero from "./Hero";
 import GameObject from "./GameObject";
-import { Input } from "../common";
-import ObjectPool from "./ObjectPool";
-import Bullet from "./Bullet";
+import { Input, Rand } from "../common";
+import Enemy from "./Enemy";
+import { Vec } from "./Math";
+import EnemySpawner from "./EnemySpawner";
 
 export default class GameScene extends GameObject{
 
-    hero: Hero = new Hero();
-    bullets: ObjectPool = new ObjectPool(() => new Bullet());
-    fire: boolean = false;
-    fireTime: number = 0;
-    fireSpeed:number = 100;
+    hero = new Hero();
+    enemies: EnemySpawner[] = [];
 
-    constructor() {
+    constructor(holes: number[][]) {
         super();
-        this.addChild(this.bullets);
-        this.addChild(this.hero);
-    }
-
-    update(delta: number) {
-        super.update(delta);
-        this.fireTime -= delta;
-        if (this.fire && this.fireTime <= 0) {
-            const bullet = this.bullets.create() as Bullet;
-            bullet.pos.set(this.hero.pos);
-            bullet.move.set(this.hero.aim.clone().sub(this.hero.pos).normalize());
-            this.fireTime = this.fireSpeed;
+        for (const hole of holes) {
+            const spawner = new EnemySpawner(
+                () => new Enemy(this.hero),
+                (item: Enemy) => {
+                    const pos = new Vec(Math.random() - 0.5, Math.random() - 0.5);
+                    pos.normalize().scale(8).add(item.parent.pos);
+                    item.pos.set(pos);
+                },
+                new Vec(hole[0], hole[1]),
+                500
+            );
+            this.enemies.push(spawner);
+            this.addChild(spawner);
         }
+        this.addChild(this.hero);
     }
 
     pointer(x: number, y: number) {
@@ -48,7 +48,7 @@ export default class GameScene extends GameObject{
         if (keys[Input.DOWN]) {
             y += 1;
         }
-        this.fire = keys[Input.FIRE] === true;
-        this.hero.move.set(x, y);
+        this.hero.dir.set(x, y);
+        this.hero.fire = keys[Input.FIRE] === true;
     }
 }

@@ -4,7 +4,7 @@ import GameScene from "./Game/GameScene";
 
 const canvas = <HTMLCanvasElement>$("#game");
 const ctx = canvas.getContext("2d");
-const scene = new GameScene();
+const scene = new GameScene([[-100, -150],[100, -100]]);
 const keys: boolean[] = [];
 let time: number;
 
@@ -25,8 +25,8 @@ function update() {
 }
 
 function resize() {
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
+    const body = document.body;
+    canvas.width = canvas.height / body.clientHeight * body.clientWidth;
 }
 
 function bind() {
@@ -47,7 +47,11 @@ function bind() {
         scene.input(keys, false);
     });
     on(document, 'mousemove', (e: MouseEvent) => {
-        scene.pointer(e.clientX - canvas.width / 2, e.clientY - canvas.height / 2);
+        const body = document.body;
+        const ratio = canvas.height / body.clientHeight;
+        const x = (e.clientX - body.clientWidth / 2) * ratio;
+        const y = (e.clientY - body.clientHeight / 2) * ratio;
+        scene.pointer(x, y);
     });
     on(window, "resize", resize);
 }

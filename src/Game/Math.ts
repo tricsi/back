@@ -69,7 +69,7 @@ export class Box {
     constructor(
         public pos: Vec,
         public width: number,
-        public height: number
+        public height: number = width
     ) {}
 
     get x() {
@@ -80,13 +80,38 @@ export class Box {
         return this.pos.y - this.height / 2;
     }
 
-}
+    collide(box: Box): boolean {
+        return this.pos.x < box.pos.x + box.width &&
+            this.pos.x + this.width > box.pos.x &&
+            this.pos.y < box.pos.y + box.height &&
+            this.height + this.pos.y > box.pos.y;
+    }
 
-export class Sphere {
+    contains(box: Box): boolean {
+        return this.pos.x <= box.pos.x &&
+            this.pos.x + this.width >= box.pos.x + box.width &&
+            this.pos.y <= box.pos.y &&
+            this.pos.y + this.height >= box.pos.y + box.height;
+    }
 
-    constructor(
-        public pos: Vec,
-        public radius: number
-    ) {}
+    intersect(box: Box): Box {
+        let Ax = Math.round(this.pos.x),
+            Ay = Math.round(this.pos.y),
+            AX = Ax + this.width,
+            AY = Ay + this.height,
+            Bx = Math.round(box.pos.x),
+            By = Math.round(box.pos.y),
+            BX = Bx + box.width,
+            BY = By + box.height,
+            Cx = Ax < Bx ? Bx : Ax,
+            Cy = Ay < By ? By : Ay,
+            CX = AX < BX ? AX : BX,
+            CY = AY < BY ? AY : BY;
+        return new Box(
+            new Vec(Cx, Cy),
+            CX - Cx,
+            CY - Cy
+        );
+    }
 
 }

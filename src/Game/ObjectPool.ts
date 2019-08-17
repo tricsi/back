@@ -4,26 +4,25 @@ export default class ObjectPool extends GameObject {
 
     private pool: GameObject[] = [];
 
-    constructor(private factory: () => GameObject) {
+    constructor(protected factory: () => GameObject) {
         super();
     }
 
-    create(): GameObject {
+    create(init: (item: GameObject) => void = null): GameObject {
         let item = this.pool.pop();
         if (!item) {
             item = this.factory();
         }
         this.addChild(item);
+        if (init) {
+            init(item);
+        }
         return item;
     }
 
     removeChild(item: GameObject) {
         super.removeChild(item);
         this.pool.push(item);
-    }
-
-    dismiss(item: GameObject) {
-        this.removeChild(item);
     }
 
 }

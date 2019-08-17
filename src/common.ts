@@ -23,6 +23,7 @@ export class Rand {
 
 export enum Input {
     FIRE = 0,
+    ALT = 32,
     LEFT = 65,
     RIGHT = 68,
     UP = 87,

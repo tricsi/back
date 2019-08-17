@@ -9,9 +9,12 @@ body, html {
 }
 
 #game {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
+    display: block;
     height: 100%;
+    margin: 0 auto;
+    image-rendering: optimizeSpeed;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -o-crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: pixelated;
 }
