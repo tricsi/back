@@ -23,16 +23,20 @@ export default class Hero extends GameObject {
     render(ctx: CanvasRenderingContext2D) {
         super.render(ctx);
         const box = this.box;
+        const pos = this.pos;
         ctx.save();
         ctx.fillStyle = "blue";
-        ctx.fillRect(Math.round(box.x), Math.round(box.y), box.width, box.height);
+        ctx.fillRect(Math.round(pos.x), Math.round(pos.y), box.width, box.height);
         ctx.restore();
+    }
+
+    move(delta: number): Vec {
+        const speed = this.spd * delta;
+        return new Vec(this.dir.x * speed, this.dir.y * speed);
     }
 
     update(delta: number) {
         super.update(delta);
-        const speed = this.spd * delta;
-        this.pos.add(this.dir.x * speed, this.dir.y * speed);
 
         this.fireTime -= delta;
         if (this.fire && this.fireTime <= 0) {

@@ -1,32 +1,32 @@
 import Hero from "./Hero";
 import GameObject from "./GameObject";
 import { Input, Rand } from "../common";
-import Enemy from "./Enemy";
-import { Vec } from "./Math";
-import EnemySpawner from "./EnemySpawner";
+import TileMap, { Tile } from "./TileMap";
 
 export default class GameScene extends GameObject{
 
     hero = new Hero();
-    enemies: EnemySpawner[] = [];
+    map = new TileMap(12, 16, 16);
 
-    constructor(holes: number[][]) {
+    constructor() {
         super();
-        for (const hole of holes) {
-            const spawner = new EnemySpawner(
-                () => new Enemy(this.hero),
-                (item: Enemy) => {
-                    const pos = new Vec(Math.random() - 0.5, Math.random() - 0.5);
-                    pos.normalize().scale(8).add(item.parent.pos);
-                    item.pos.set(pos);
-                },
-                new Vec(hole[0], hole[1]),
-                500
-            );
-            this.enemies.push(spawner);
-            this.addChild(spawner);
-        }
+        this.addChild(this.map);
         this.addChild(this.hero);
+        this.hero.pos.set(96, 192);
+        this.map.set(3, 3, Tile.WALL);
+    }
+
+    update(delta: number) {
+        super.update(delta);
+        const move = this.hero.move(delta);
+        if (move.x) {
+            this.hero.pos.x += move.x;
+            this.map.collideX(this.hero.box);
+        }
+        if (move.y) {
+            this.hero.pos.y += move.y;
+            this.map.collideY(this.hero.box);
+        }
     }
 
     pointer(x: number, y: number) {

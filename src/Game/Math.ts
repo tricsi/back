@@ -55,6 +55,16 @@ export class Vec {
         return Math.sqrt(this.x * this.x + this.y * this.y);
     }
 
+    angle(): number {
+        return Math.atan2(this.y, this.x);
+    }
+
+    invert(): Vec {
+        this.x = -this.x;
+        this.y = -this.y;
+        return this;
+    }
+
     normalize(): Vec {
         var len = this.length();
         if (len > 0) {
@@ -71,14 +81,6 @@ export class Box {
         public width: number,
         public height: number = width
     ) {}
-
-    get x() {
-        return this.pos.x - this.width / 2;
-    }
-
-    get y() {
-        return this.pos.y - this.height / 2;
-    }
 
     collide(box: Box): boolean {
         return this.pos.x < box.pos.x + box.width &&

@@ -19,9 +19,10 @@ export default class Enemy extends GameObject
 
     render(ctx: CanvasRenderingContext2D) {
         const box = this.box;
+        const pos = this.pos;
         ctx.save();
         ctx.fillStyle = "red";
-        ctx.fillRect(Math.round(box.x), Math.round(box.y), box.width, box.height);
+        ctx.fillRect(Math.round(pos.x), Math.round(pos.y), box.width, box.height);
         ctx.restore();
     }
 
@@ -33,8 +34,8 @@ export default class Enemy extends GameObject
                 return;
             }
         }
-        this.dir = this.hero.pos.clone().sub(this.pos).normalize();
         const speed = this.spd * delta;
+        this.dir = this.hero.pos.clone().sub(this.pos).normalize();
         this.pos.add(this.dir.x * speed, this.dir.y * speed);
     }
 }
