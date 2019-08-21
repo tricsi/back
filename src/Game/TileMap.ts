@@ -1,5 +1,5 @@
 import GameObject from "./GameObject";
-import { Box, Vec } from "./Math";
+import { Box } from "./Math";
 
 export enum Tile {
     WALL = 0,
@@ -51,49 +51,52 @@ export default class TileMap extends GameObject {
             : Tile.WALL;
     }
 
-    collideY(box: Box) {
+    collideX(box: Box, correct: boolean = false): boolean {
         let pos = box.pos,
             size = this.size,
-            x = Math.floor(pos.x / size),
-            y = Math.floor(pos.y / size),
-            w = Math.ceil(box.width / 16),
-            h = Math.ceil(box.height / 16);
-        for (let i = 0; i <= w; i++) {
-            if (
-                this.get(x + i, y) !== Tile.GROUND &&
-                pos.y < (y + 1) * size
-            ) {
-                pos.y += (y + 1) * size - pos.y;
+            top = Math.floor(pos.y / size),
+            left = Math.floor(pos.x / size),
+            right = Math.floor((pos.x + box.width) / size);
+        for (let i = top * size; i < pos.y + box.height; i += size) {
+            let y = Math.floor(i / size);
+            if (this.get(left, y) !== Tile.GROUND) {
+                if (correct) {
+                    pos.x += (left + 1) * size - pos.x;
+                }
+                return true;
             }
-            if (
-                this.get(x + i, y + h) !== Tile.GROUND &&
-                pos.y + box.height > (y + h) * size
-            ) {
-                pos.y += (y + h) * size - (pos.y + box.height);
+            if (this.get(right, y) != Tile.GROUND) {
+                if (correct) {
+                    pos.x -= pos.x + box.width - right * size;
+                }
+                return true;
             }
         }
+        return false;
     }
 
-    collideX(box: Box) {
+    collideY(box: Box, correct: boolean = false): boolean {
         let pos = box.pos,
             size = this.size,
-            x = Math.floor(pos.x / size),
-            y = Math.floor(pos.y / size),
-            w = Math.ceil(box.width / 16),
-            h = Math.ceil(box.height / 16);
-        for (let i = 0; i <= h; i++) {
-            if (
-                this.get(x, y + i) !== Tile.GROUND &&
-                pos.x < (x + 1) * size
-            ) {
-                pos.x += (x + 1) * size - pos.x;
+            top = Math.floor(pos.y / size),
+            left = Math.floor(pos.x / size),
+            bottom = Math.floor((pos.y + box.height) / size);
+        for (let i = left * size; i < pos.x + box.width; i += size) {
+            let x = Math.floor(i / size);
+            if (this.get(x, top) !== Tile.GROUND) {
+                if (correct) {
+                    pos.y += (top + 1) * size - pos.y;
+                }
+                return true;
             }
-            if (
-                this.get(x + w, y + i) !== Tile.GROUND &&
-                pos.x + box.width > (x + w) * size
-            ) {
-                pos.x += (x + w) * size - (pos.x + box.width);
+            if (this.get(x, bottom) != Tile.GROUND) {
+                if (correct) {
+                    pos.y -= pos.y + box.height - bottom * size;
+                }
+                return true;
             }
         }
+        return false;
     }
+
 }

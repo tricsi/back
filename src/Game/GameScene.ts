@@ -18,14 +18,18 @@ export default class GameScene extends GameObject{
 
     update(delta: number) {
         super.update(delta);
-        const move = this.hero.move(delta);
-        if (move.x) {
-            this.hero.pos.x += move.x;
-            this.map.collideX(this.hero.box);
+        this.updateHero(delta);
+    }
+
+    updateHero(delta: number) {
+        const hero = this.hero;
+        if (hero.dir.x) {
+            hero.pos.x += hero.dir.x * hero.spd * delta;
+            this.map.collideX(hero.box, true);
         }
-        if (move.y) {
-            this.hero.pos.y += move.y;
-            this.map.collideY(this.hero.box);
+        if (hero.dir.y) {
+            hero.pos.y += hero.dir.y * hero.spd * delta;
+            this.map.collideY(hero.box, true);
         }
     }
 

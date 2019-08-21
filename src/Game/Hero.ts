@@ -30,11 +30,6 @@ export default class Hero extends GameObject {
         ctx.restore();
     }
 
-    move(delta: number): Vec {
-        const speed = this.spd * delta;
-        return new Vec(this.dir.x * speed, this.dir.y * speed);
-    }
-
     update(delta: number) {
         super.update(delta);
 
