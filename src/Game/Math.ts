@@ -72,9 +72,14 @@ export class Vec {
         }
         return this;
     }
+
 }
 
 export class Box {
+
+    get center(): Vec {
+        return new Vec(this.width / 2 + this.pos.x, this.height / 2 + this.pos.y)
+    }
 
     constructor(
         public pos: Vec,

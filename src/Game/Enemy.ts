@@ -3,8 +3,9 @@ import { Vec, Box } from "./Math";
 import Hero from "./Hero";
 import Bullet from "./Bullet";
 import ObjectSpawner from "./ObjectSpawner";
+import IMovable from "./IMovable";
 
-export default class Enemy extends GameObject
+export default class Enemy extends GameObject implements IMovable
 {
 
     pos = new Vec();
@@ -27,15 +28,12 @@ export default class Enemy extends GameObject
     }
 
     update(delta: number) {
-        for (const bullet of this.hero.bullets.children) {
+        for (const bullet of this.hero.children) {
             if (this.box.collide((<Bullet>bullet).box)) {
                 this.parent.removeChild(this);
-                this.hero.bullets.removeChild(bullet);
+                this.hero.removeChild(bullet);
                 return;
             }
         }
-        const speed = this.spd * delta;
-        this.dir = this.hero.pos.clone().sub(this.pos).normalize();
-        this.pos.add(this.dir.x * speed, this.dir.y * speed);
     }
 }

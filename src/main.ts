@@ -15,8 +15,9 @@ function render() {
 
 function update() {
     const now = new Date().getTime();
+    const delta = now - time;
     requestAnimationFrame(update);
-    scene.update(now - time);
+    scene.update(delta < 34 ? delta : 34);
     time = now;
     render();
 }
