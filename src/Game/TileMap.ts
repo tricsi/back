@@ -14,7 +14,6 @@ export default class TileMap extends GameObject {
 
     tiles: number[][] = [];
     nav: number[][] = [];
-    target = new Vec();
 
     constructor(
         public width: number,
@@ -42,8 +41,8 @@ export default class TileMap extends GameObject {
                 if (this.tiles[y][x] === Tile.GROUND) {
                     ctx.fillStyle = "#ccc";
                     ctx.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
-                    ctx.fillStyle = "#ddd";
-                    ctx.fillText(this.nav[y][x].toString(), x * size + 2, y * size + 10)
+                    // ctx.fillStyle = "#ddd";
+                    // ctx.fillText(this.nav[y][x].toString(), x * size + 2, y * size + 10)
                 }
             }
         }
@@ -112,14 +111,14 @@ export default class TileMap extends GameObject {
     }
 
     createNav(pos: Vec) {
-        const x = Math.floor(pos.x / this.size);
-        const y = Math.floor(pos.y / this.size);
-        if (this.target.x === x && this.target.y === y) {
-            return;
-        }
-        this.target.set(x, y);
+        const target = pos.tile(this.size);
         this.nav.forEach(row => row.fill(TileMap.MAX_NAV));
-        this.setNav(x, y);
+        this.setNav(target.x, target.y);
+    }
+
+    lockNav(pos: Vec) {
+        const tile = pos.tile(this.size);
+        this.nav[tile.y][tile.x] = TileMap.MAX_NAV;
     }
 
     setDirection(item: IMovable) {

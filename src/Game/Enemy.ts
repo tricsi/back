@@ -30,6 +30,7 @@ export default class Enemy extends GameObject implements IMovable
     update(delta: number) {
         if (this.box.collide(this.hero.box)) {
             this.parent.removeChild(this);
+            return;
         }
         for (const bullet of this.hero.children) {
             if (this.box.collide((<Bullet>bullet).box)) {

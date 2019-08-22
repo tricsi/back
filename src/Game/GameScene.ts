@@ -16,13 +16,15 @@ export default class GameScene extends GameObject{
             () => new Enemy(this.hero),
             (item: Enemy) => item.pos.set(item.parent.pos),
             new Vec(64, 16),
-            500
+            100,
+            20
         ),
         new EnemySpawner(
             () => new Enemy(this.hero),
             (item: Enemy) => item.pos.set(item.parent.pos),
             new Vec(128, 32),
-            500
+            100,
+            20
         ),
     ];
 
@@ -31,7 +33,6 @@ export default class GameScene extends GameObject{
         this.map.set(3, 4, Tile.WALL);
         this.map.set(4, 4, Tile.WALL);
         this.map.set(5, 4, Tile.WALL);
-        this.map.set(6, 5, Tile.WALL);
         this.map.set(7, 6, Tile.WALL);
         this.map.set(8, 6, Tile.WALL);
         this.map.set(9, 5, Tile.WALL);
@@ -44,8 +45,11 @@ export default class GameScene extends GameObject{
     update(delta: number) {
         super.update(delta);
         this.updateHero(this.hero, delta);
-        this.map.createNav(this.hero.box.center);
         this.hero.children.forEach((item: Bullet) => this.updateProjectile(item, delta));
+        this.map.createNav(this.hero.box.center);
+        this.spawners.forEach(spawner => {
+            spawner.children.forEach((item: Enemy) => this.map.lockNav(item.box.center));
+        });
         this.spawners.forEach(spawner => {
             spawner.children.forEach((item: Enemy) => this.updateEnemy(item, delta));
         });
