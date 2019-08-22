@@ -2,10 +2,6 @@ import { Vec, Box } from "./Math";
 
 export default abstract class GameObject {
 
-    pos = new Vec();
-    box = new Box(this.pos, 16, 16);
-    dir = new Vec();
-    spd = 0;
     parent: GameObject;
     children: GameObject[] = [];
 

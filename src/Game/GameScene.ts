@@ -16,13 +16,13 @@ export default class GameScene extends GameObject{
     spawners = [
         new EnemySpawner(
             () => new Enemy(this.hero),
-            item => item.pos.set(item.parent.pos),
+            (item: Enemy) => item.pos.set(item.parent.pos),
             new Vec(64, 16),
             500
         ),
         new EnemySpawner(
             () => new Enemy(this.hero),
-            item => item.pos.set(item.parent.pos),
+            (item: Enemy) => item.pos.set(item.parent.pos),
             new Vec(128, 32),
             500
         ),
@@ -46,14 +46,14 @@ export default class GameScene extends GameObject{
     update(delta: number) {
         super.update(delta);
         this.updateMovable(this.hero, delta);
-        this.map.createNav(this.hero.pos);
+        this.map.createNav(this.hero.box.center);
         this.spawners.forEach(spawner => {
-            spawner.children.forEach(item => {
+            spawner.children.forEach((item: Enemy) => {
                 this.map.setDirection(item);
                 this.updateMovable(item, delta)
             });
         });
-        this.hero.children.forEach(item => this.updateProjectile(item, delta));
+        this.hero.children.forEach((item: Bullet) => this.updateProjectile(item, delta));
     }
 
     updateMovable(item: IMovable, delta: number) {
