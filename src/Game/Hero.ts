@@ -1,4 +1,3 @@
-import GameObject from "./GameObject";
 import { Box, Vec } from "./Math";
 import ObjectPool from "./ObjectPool";
 import Bullet from "./Bullet";

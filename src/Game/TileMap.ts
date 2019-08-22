@@ -123,21 +123,40 @@ export default class TileMap extends GameObject {
     }
 
     setDirection(item: IMovable) {
-        const pos = item.pos;
-        const x = Math.floor(pos.x / this.size);
-        const y = Math.floor(pos.y / this.size);
+        const size = this.size;
+        const center = item.box.center;
+        const pos = center.tile(size);
         item.dir.set(0, 0);
-        let value = TileMap.MAX_NAV;
-        for (let i = -1; i <= 1; i++) {
-            for (let j = -1; j <= 1; j++) {
-                const nav = this.getNav(x + j, y + i);
-                if (i && j && nav < value) {
-                    item.dir.set(j, i);
-                    value = nav;
-                }
+        let weight = TileMap.MAX_NAV;
+        weight = this.setDir(item, pos, new Vec(1, 0), weight);
+        weight = this.setDir(item, pos, new Vec(-1, 0), weight);
+        weight = this.setDir(item, pos, new Vec(0, 1), weight);
+        weight = this.setDir(item, pos, new Vec(0, -1), weight);
+        if (item.dir.x) {
+            if (this.get(pos.x, pos.y + 1) !== Tile.WALL) {
+                weight = this.setDir(item, pos, new Vec(item.dir.x, 1), weight);
+            }
+            if (this.get(pos.x, pos.y - 1) !== Tile.WALL) {
+                weight = this.setDir(item, pos, new Vec(item.dir.x, -1), weight);
+            }
+        } else if (item.dir.y) {
+            if (this.get(pos.x + 1, pos.y) !== Tile.WALL) {
+                weight = this.setDir(item, pos, new Vec(1, item.dir.y), weight);
+            }
+            if (this.get(pos.x - 1, pos.y) !== Tile.WALL) {
+                weight = this.setDir(item, pos, new Vec(-1, item.dir.y), weight);
             }
         }
-        item.dir.normalize();
+        item.dir.add(pos).scale(size).add(size / 2).sub(center).normalize();
+    }
+
+    private setDir(item: IMovable, pos: Vec, dir: Vec, weight: number) {
+        const nav = this.getNav(pos.x + dir.x, pos.y + dir.y);
+        if (weight > nav) {
+            item.dir = dir;
+            weight = nav;
+        }
+        return weight;
     }
 
     private getNav(x: number, y: number): number {

@@ -1,13 +1,11 @@
 import Hero from "./Hero";
 import GameObject from "./GameObject";
-import { Input, Rand } from "../common";
+import { Input } from "../common";
 import TileMap, { Tile } from "./TileMap";
-import IMovable from "./IMovable";
 import EnemySpawner from "./EnemySpawner";
 import Enemy from "./Enemy";
 import { Vec } from "./Math";
 import Bullet from "./Bullet";
-import ObjectSpawner from "./ObjectSpawner";
 
 export default class GameScene extends GameObject{
 
@@ -30,9 +28,6 @@ export default class GameScene extends GameObject{
 
     constructor() {
         super();
-        this.addChild(this.map);
-        this.addChild(this.hero);
-        this.spawners.forEach(spawner => this.addChild(spawner));
         this.map.set(3, 4, Tile.WALL);
         this.map.set(4, 4, Tile.WALL);
         this.map.set(5, 4, Tile.WALL);
@@ -41,22 +36,22 @@ export default class GameScene extends GameObject{
         this.map.set(8, 6, Tile.WALL);
         this.map.set(9, 5, Tile.WALL);
         this.hero.pos.set(96, 192);
+        this.addChild(this.map);
+        this.addChild(this.hero);
+        this.spawners.forEach(spawner => this.addChild(spawner));
     }
 
     update(delta: number) {
         super.update(delta);
-        this.updateMovable(this.hero, delta);
+        this.updateHero(this.hero, delta);
         this.map.createNav(this.hero.box.center);
-        this.spawners.forEach(spawner => {
-            spawner.children.forEach((item: Enemy) => {
-                this.map.setDirection(item);
-                this.updateMovable(item, delta)
-            });
-        });
         this.hero.children.forEach((item: Bullet) => this.updateProjectile(item, delta));
+        this.spawners.forEach(spawner => {
+            spawner.children.forEach((item: Enemy) => this.updateEnemy(item, delta));
+        });
     }
 
-    updateMovable(item: IMovable, delta: number) {
+    updateHero(item: Hero, delta: number) {
         if (item.dir.x) {
             item.pos.x += item.dir.x * item.spd * delta;
             this.map.collideX(item.box, true);
@@ -65,6 +60,12 @@ export default class GameScene extends GameObject{
             item.pos.y += item.dir.y * item.spd * delta;
             this.map.collideY(item.box, true);
         }
+    }
+
+    updateEnemy(item: Enemy, delta: number) {
+        this.map.setDirection(item);
+        const speed = item.spd * delta;
+        item.pos.add(item.dir.x * speed, item.dir.y * speed);
     }
 
     updateProjectile(item: Bullet, delta: number) {
@@ -97,7 +98,7 @@ export default class GameScene extends GameObject{
         if (keys[Input.DOWN]) {
             y += 1;
         }
-        this.hero.dir.set(x, y);
+        this.hero.dir.set(x, y).normalize();
         this.hero.fire = keys[Input.FIRE] === true;
     }
 }

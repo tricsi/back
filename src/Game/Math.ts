@@ -1,14 +1,22 @@
 export class Vec {
 
-    constructor(public x: number = 0, public y: number = 0) {}
-
-    clone(): Vec {
-        return new Vec(this.x, this.y);
+    get length(): number {
+        return Math.sqrt(this.x * this.x + this.y * this.y);
     }
 
+    get angle(): number {
+        return Math.atan2(this.y, this.x);
+    }
+
+    constructor(
+        public x: number = 0,
+        public y: number = 0
+    ) {}
+
     set(vec: Vec): Vec;
+    set(xy: number): Vec;
     set(x: number, y: number): Vec;
-    set(xOrVec: any, y?: number): Vec {
+    set(xOrVec: any, y: number = xOrVec): Vec {
         if (xOrVec instanceof Vec) {
             this.x = xOrVec.x;
             this.y = xOrVec.y;
@@ -20,8 +28,9 @@ export class Vec {
     }
 
     add(vec: Vec): Vec;
+    add(xy: number): Vec;
     add(x: number, y: number): Vec;
-    add(xOrVec: any, y?: number): Vec {
+    add(xOrVec: any, y: number = xOrVec): Vec {
         if (xOrVec instanceof Vec) {
             this.x += xOrVec.x;
             this.y += xOrVec.y;
@@ -33,8 +42,9 @@ export class Vec {
     }
 
     sub(vec: Vec): Vec;
+    sub(xy: number): Vec;
     sub(x: number, y:number): Vec;
-    sub(xOrVec: any, y?:number): Vec {
+    sub(xOrVec: any, y:number = xOrVec): Vec {
         if (xOrVec instanceof Vec) {
             this.x -= xOrVec.x;
             this.y -= xOrVec.y;
@@ -51,12 +61,8 @@ export class Vec {
         return this;
     }
 
-    length(): number {
-        return Math.sqrt(this.x * this.x + this.y * this.y);
-    }
-
-    angle(): number {
-        return Math.atan2(this.y, this.x);
+    tile(size: number): Vec {
+        return new Vec(Math.floor(this.x / size), Math.floor(this.y / size));
     }
 
     invert(): Vec {
@@ -66,11 +72,15 @@ export class Vec {
     }
 
     normalize(): Vec {
-        var len = this.length();
+        const len = this.length;
         if (len > 0) {
             this.scale(1 / len);
         }
         return this;
+    }
+
+    clone(): Vec {
+        return new Vec(this.x, this.y);
     }
 
 }
@@ -78,7 +88,10 @@ export class Vec {
 export class Box {
 
     get center(): Vec {
-        return new Vec(this.width / 2 + this.pos.x, this.height / 2 + this.pos.y)
+        return new Vec(
+            this.width / 2 + this.pos.x,
+            this.height / 2 + this.pos.y
+        );
     }
 
     constructor(
