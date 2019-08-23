@@ -20,7 +20,7 @@ export default class Hero extends ObjectPool implements IMovable {
         const pos = this.pos;
         ctx.save();
         ctx.fillStyle = "blue";
-        ctx.fillRect(Math.round(pos.x), Math.round(pos.y), box.width, box.height);
+        ctx.fillRect(pos.x, pos.y, box.width, box.height);
         ctx.restore();
     }
 
@@ -30,8 +30,10 @@ export default class Hero extends ObjectPool implements IMovable {
         this.fireTime -= delta;
         if (this.fire && this.fireTime <= 0) {
             this.create((bullet: Bullet) => {
-                bullet.pos.set(this.pos.x + this.box.width / 2, this.pos.y + this.box.height / 2);
-                bullet.dir = this.aim.clone().sub(this.pos).normalize();
+                const box = bullet.box;
+                const center = this.box.center;
+                bullet.pos.set(center.x - box.width / 2, center.y - box.height / 2);
+                bullet.dir = this.aim.clone().sub(center).normalize();
             });
             this.fireTime = this.fireSpeed;
         }

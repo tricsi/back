@@ -41,8 +41,8 @@ export default class TileMap extends GameObject {
                 if (this.tiles[y][x] === Tile.GROUND) {
                     ctx.fillStyle = "#ccc";
                     ctx.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
-                    // ctx.fillStyle = "#ddd";
-                    // ctx.fillText(this.nav[y][x].toString(), x * size + 2, y * size + 10)
+                    ctx.fillStyle = "#eee";
+                    ctx.fillText(this.nav[y][x].toString(), x * size + 2, y * size + 10)
                 }
             }
         }

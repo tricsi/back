@@ -1,13 +1,15 @@
 import "./style.scss";
+import Sfx from "./sfx";
 import { on, $ } from "./common";
 import GameScene from "./Game/GameScene";
 
+const texture = require("./assets/texture.png");
+const config = require("./assets/texture.json");
 const canvas = <HTMLCanvasElement>$("#game");
 const ctx = canvas.getContext("2d");
 const scene = new GameScene();
 const keys: boolean[] = [];
 let time: number;
-
 function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     scene.render(ctx);
@@ -25,6 +27,7 @@ function update() {
 function resize() {
     const body = document.body;
     canvas.width = canvas.height / body.clientHeight * body.clientWidth;
+    scene.cam.pos.x = (canvas.width - scene.cam.width) / 2;
 }
 
 function bind() {
@@ -53,6 +56,7 @@ function bind() {
 }
 
 on(window, "load", async () => {
+    Sfx.init();
     resize();
     bind();
     time = new Date().getTime();

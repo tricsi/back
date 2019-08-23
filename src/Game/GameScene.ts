@@ -4,14 +4,17 @@ import { Input } from "../common";
 import TileMap, { Tile } from "./TileMap";
 import EnemySpawner from "./EnemySpawner";
 import Enemy from "./Enemy";
-import { Vec } from "./Math";
+import { Vec, Box } from "./Math";
 import Bullet from "./Bullet";
 
 export default class GameScene extends GameObject{
 
     hero = new Hero(() => new Bullet());
-    map = new TileMap(12, 16, 16);
-    spawners = [
+    map = new TileMap(12, 128, 16);
+    cam = new Box(new Vec(0, -64), 192, 256);
+    spd = 0.02;
+    aim = new Vec();
+    spawners: EnemySpawner[] = [
         new EnemySpawner(
             () => new Enemy(this.hero),
             (item: Enemy) => item.pos.set(item.parent.pos),
@@ -36,13 +39,21 @@ export default class GameScene extends GameObject{
         this.map.set(7, 6, Tile.WALL);
         this.map.set(8, 6, Tile.WALL);
         this.map.set(9, 5, Tile.WALL);
-        this.hero.pos.set(96, 192);
+        this.hero.pos.set(96, 128);
         this.addChild(this.map);
         this.addChild(this.hero);
         this.spawners.forEach(spawner => this.addChild(spawner));
     }
 
+    render(ctx: CanvasRenderingContext2D) {
+        ctx.save();
+        ctx.translate(this.cam.pos.x, -this.cam.pos.y);
+        super.render(ctx);
+        ctx.restore();
+    }
+
     update(delta: number) {
+        this.cam.pos.y += this.spd * delta;
         super.update(delta);
         this.updateHero(this.hero, delta);
         this.hero.children.forEach((item: Bullet) => this.updateProjectile(item, delta));
@@ -55,14 +66,22 @@ export default class GameScene extends GameObject{
         });
     }
 
-    updateHero(item: Hero, delta: number) {
-        if (item.dir.x) {
-            item.pos.x += item.dir.x * item.spd * delta;
-            this.map.collideX(item.box, true);
+    updateHero(hero: Hero, delta: number) {
+        const map = this.map;
+        const speed = this.spd * delta;
+        if (hero.dir.x) {
+            hero.pos.x += hero.dir.x * hero.spd * delta;
+            map.collideX(hero.box, true);
         }
-        if (item.dir.y) {
-            item.pos.y += item.dir.y * item.spd * delta;
-            this.map.collideY(item.box, true);
+        if (hero.dir.y) {
+            hero.pos.y += hero.dir.y * hero.spd * delta;
+        }
+        hero.pos.y += speed;
+        hero.aim.set(this.aim).add(-this.cam.pos.x, this.cam.pos.y);
+        map.collideY(hero.box, true);
+        const bottom = this.cam.pos.y + this.cam.height - hero.pos.y - hero.box.height
+        if (bottom < 0) {
+            hero.pos.y += bottom;
         }
     }
 
@@ -84,7 +103,7 @@ export default class GameScene extends GameObject{
     }
 
     pointer(x: number, y: number) {
-        this.hero.aim.set(x, y);
+        this.aim.set(x, y);
     }
 
     input(keys: boolean[], down: boolean) {

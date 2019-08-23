@@ -13,7 +13,7 @@ export default class Bullet extends GameObject {
         ctx.save();
         ctx.fillStyle = "black";
         ctx.beginPath();
-        ctx.arc(Math.round(pos.x), Math.round(pos.y), this.box.width / 2, 0, Math.PI * 2);
+        ctx.arc(pos.x, pos.y, this.box.width / 2, 0, Math.PI * 2);
         ctx.closePath();
         ctx.fill();
         ctx.restore();

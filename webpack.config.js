@@ -26,7 +26,7 @@ class AdvzipPlugin {
                 return;
             }
             const args = ["-a4", this.opt.out].concat(this.opt.files);
-            execFile(advzip, args, {cwd: this.opt.cwd}, () => {
+            execFile(advzip, args, { cwd: this.opt.cwd }, () => {
                 const out = path.resolve(this.opt.cwd, this.opt.out);
                 const stats = fs.statSync(out);
                 console.log(`Advzip: ${stats.size}`);
@@ -55,6 +55,17 @@ module.exports = {
             {
                 test: /\.tsx?$/,
                 loader: "ts-loader"
+            },
+            {
+                test: /\.(png|jpg|gif)$/i,
+                use: [
+                    {
+                        loader: 'url-loader',
+                        options: {
+                            limit: 8192,
+                        }
+                    }
+                ]
             },
             {
                 test: /\.scss$/,
