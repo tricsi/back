@@ -14,22 +14,7 @@ export default class GameScene extends GameObject{
     cam = new Box(new Vec(0, -64), 192, 256);
     spd = 0.02;
     aim = new Vec();
-    spawners: EnemySpawner[] = [
-        // new EnemySpawner(
-        //     () => new Enemy(this.hero),
-        //     (item: Enemy) => item.pos.set(item.parent.pos),
-        //     new Vec(64, 16),
-        //     100,
-        //     20
-        // ),
-        // new EnemySpawner(
-        //     () => new Enemy(this.hero),
-        //     (item: Enemy) => item.pos.set(item.parent.pos),
-        //     new Vec(128, 32),
-        //     100,
-        //     20
-        // ),
-    ];
+    spawners: EnemySpawner[] = [];
 
     constructor() {
         super();
@@ -37,7 +22,17 @@ export default class GameScene extends GameObject{
         this.map.createNav(this.hero.box.center);
         this.addChild(this.map);
         this.addChild(this.hero);
-        this.spawners.forEach(spawner => this.addChild(spawner));
+        this.map.getPosByTile(Tile.HOLE).forEach(pos => {
+            const spawner = new EnemySpawner(
+                () => new Enemy(this.hero),
+                (item: Enemy) => item.pos.set(pos),
+                pos,
+                100,
+                20
+            );
+            this.spawners.push(spawner);
+            this.addChild (spawner);
+        });
     }
 
     render(ctx: CanvasRenderingContext2D) {

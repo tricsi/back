@@ -12,7 +12,7 @@ class TileSegment {
 
     constructor(
         public map: number[][],
-        public holes: number[][] = []
+        public poi: number[][] = []
     ) {
     }
 
@@ -40,14 +40,16 @@ export default class TileMap extends GameObject {
     ) {
         super();
         for (const i of cave) {
-            this.loadSegment(this.segments[i]);
+            const top = this.height;
+            const segment = this.segments[i];
+            this.loadMap(segment.map);
+            this.loadPoi(segment.poi, top);
         }
     }
 
-    loadSegment(segment: TileSegment) {
-        for (const line of segment.map) {
+    loadMap(data: number[][]) {
+        for (const line of data) {
             for (let i = 0; i < line[0]; i++) {
-                this.nav[this.height] = new Array(this.width).fill(TileMap.MAX_NAV);
                 const row = new Array(this.width);
                 if (line.length === 1) {
                     row.fill(Tile.GROUND);
@@ -57,7 +59,16 @@ export default class TileMap extends GameObject {
                         row.fill(Tile.GROUND, line[j], line[j + 1]);
                     }
                 }
-                this.tiles[this.height++] = row;
+                this.tiles[this.height] = row;
+                this.nav[this.height++] = new Array(this.width).fill(TileMap.MAX_NAV);
+            }
+        }
+    }
+
+    loadPoi(data: number[][], top: number) {
+        for (const line of data) {
+            for (let j = 1; j < line.length; j += 2) {
+                this.setTile(line[j], line[j + 1], line[0]);
             }
         }
     }
@@ -91,6 +102,18 @@ export default class TileMap extends GameObject {
             : Tile.WALL;
     }
 
+    getPosByTile(tile: number): Vec[] {
+        const result: Vec[] = [];
+        for (let y = 0; y < this.height; y++) {
+            for (let x = 0; x < this.height; x++) {
+                if (this.tiles[y][x] === tile) {
+                    result.push(new Vec(x * this.size, y * this.size));
+                }
+            }
+        }
+        return result;
+    }
+
     collideX(box: Box, correct: boolean = false): boolean {
         let pos = box.pos,
             size = this.size,
@@ -99,13 +122,13 @@ export default class TileMap extends GameObject {
             right = Math.floor((pos.x + box.width) / size);
         for (let i = top * size; i < pos.y + box.height; i += size) {
             let y = Math.floor(i / size);
-            if (this.getTile(left, y) !== Tile.GROUND) {
+            if (!this.getTile(left, y)) {
                 if (correct) {
                     pos.x += (left + 1) * size - pos.x;
                 }
                 return true;
             }
-            if (this.getTile(right, y) != Tile.GROUND) {
+            if (!this.getTile(right, y)) {
                 if (correct) {
                     pos.x -= pos.x + box.width - right * size;
                 }
@@ -123,13 +146,13 @@ export default class TileMap extends GameObject {
             bottom = Math.floor((pos.y + box.height) / size);
         for (let i = left * size; i < pos.x + box.width; i += size) {
             let x = Math.floor(i / size);
-            if (this.getTile(x, top) !== Tile.GROUND) {
+            if (!this.getTile(x, top)) {
                 if (correct) {
                     pos.y += (top + 1) * size - pos.y;
                 }
                 return true;
             }
-            if (this.getTile(x, bottom) != Tile.GROUND) {
+            if (!this.getTile(x, bottom)) {
                 if (correct) {
                     pos.y -= pos.y + box.height - bottom * size;
                 }
@@ -161,17 +184,17 @@ export default class TileMap extends GameObject {
         weight = this.setDir(item, pos, new Vec(0, 1), weight);
         weight = this.setDir(item, pos, new Vec(0, -1), weight);
         if (item.dir.x) {
-            if (this.getTile(pos.x, pos.y + 1) !== Tile.WALL) {
+            if (this.getTile(pos.x, pos.y + 1)) {
                 weight = this.setDir(item, pos, new Vec(item.dir.x, 1), weight);
             }
-            if (this.getTile(pos.x, pos.y - 1) !== Tile.WALL) {
+            if (this.getTile(pos.x, pos.y - 1)) {
                 weight = this.setDir(item, pos, new Vec(item.dir.x, -1), weight);
             }
         } else if (item.dir.y) {
-            if (this.getTile(pos.x + 1, pos.y) !== Tile.WALL) {
+            if (this.getTile(pos.x + 1, pos.y)) {
                 weight = this.setDir(item, pos, new Vec(1, item.dir.y), weight);
             }
-            if (this.getTile(pos.x - 1, pos.y) !== Tile.WALL) {
+            if (this.getTile(pos.x - 1, pos.y)) {
                 weight = this.setDir(item, pos, new Vec(-1, item.dir.y), weight);
             }
         }
@@ -196,7 +219,7 @@ export default class TileMap extends GameObject {
     private setNav(x: number, y: number, weight: number = 0) {
         if (
             weight >= TileMap.MAX_NAV ||
-            this.getTile(x, y) === Tile.WALL ||
+            !this.getTile(x, y) ||
             weight >= this.nav[y][x]
         ) {
             return;
