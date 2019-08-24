@@ -87,11 +87,14 @@ export class Vec {
 
 export class Box {
 
+    _center = new Vec();
+
     get center(): Vec {
-        return new Vec(
+        this._center.set(
             this.width / 2 + this.pos.x,
             this.height / 2 + this.pos.y
         );
+        return this._center;
     }
 
     constructor(

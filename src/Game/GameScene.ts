@@ -10,36 +10,31 @@ import Bullet from "./Bullet";
 export default class GameScene extends GameObject{
 
     hero = new Hero(() => new Bullet());
-    map = new TileMap(12, 128, 16);
+    map = new TileMap(12, 16, [1, 2, 3, 4, 0]);
     cam = new Box(new Vec(0, -64), 192, 256);
     spd = 0.02;
     aim = new Vec();
     spawners: EnemySpawner[] = [
-        new EnemySpawner(
-            () => new Enemy(this.hero),
-            (item: Enemy) => item.pos.set(item.parent.pos),
-            new Vec(64, 16),
-            100,
-            20
-        ),
-        new EnemySpawner(
-            () => new Enemy(this.hero),
-            (item: Enemy) => item.pos.set(item.parent.pos),
-            new Vec(128, 32),
-            100,
-            20
-        ),
+        // new EnemySpawner(
+        //     () => new Enemy(this.hero),
+        //     (item: Enemy) => item.pos.set(item.parent.pos),
+        //     new Vec(64, 16),
+        //     100,
+        //     20
+        // ),
+        // new EnemySpawner(
+        //     () => new Enemy(this.hero),
+        //     (item: Enemy) => item.pos.set(item.parent.pos),
+        //     new Vec(128, 32),
+        //     100,
+        //     20
+        // ),
     ];
 
     constructor() {
         super();
-        this.map.set(3, 4, Tile.WALL);
-        this.map.set(4, 4, Tile.WALL);
-        this.map.set(5, 4, Tile.WALL);
-        this.map.set(7, 6, Tile.WALL);
-        this.map.set(8, 6, Tile.WALL);
-        this.map.set(9, 5, Tile.WALL);
         this.hero.pos.set(96, 128);
+        this.map.createNav(this.hero.box.center);
         this.addChild(this.map);
         this.addChild(this.hero);
         this.spawners.forEach(spawner => this.addChild(spawner));

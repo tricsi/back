@@ -52,6 +52,7 @@ function bind() {
         const ratio = canvas.height / body.clientHeight;
         scene.pointer(e.clientX * ratio, e.clientY * ratio);
     });
+    on(document, 'contextmenu', (e: MouseEvent) => e.preventDefault());
     on(window, "resize", resize);
 }
 
