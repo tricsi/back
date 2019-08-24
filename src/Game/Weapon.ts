@@ -30,12 +30,13 @@ export class Grenade extends GameObject implements IMovable{
     dir = new Vec();
     aim = new Vec();
     spd = 0.2;
-    box = new Box(this.pos, 8);
+    box = new Box(this.pos, 10);
+    rad = 48;
 
     render(ctx: CanvasRenderingContext2D) {
         const pos = this.box.center;
         ctx.save();
-        ctx.fillStyle = "#0c0";
+        ctx.fillStyle = "#0f0";
         ctx.beginPath();
         ctx.arc(pos.x, pos.y, this.box.width / 2, 0, Math.PI * 2);
         ctx.closePath();

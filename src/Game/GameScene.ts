@@ -32,6 +32,23 @@ export default class GameScene extends GameObject {
             this.addChild(spawner);
         }
         this.addChild(this.hero);
+        this.bind();
+    }
+
+    bind() {
+        this.on("grenade", (event: GameEvent) => {
+            const grenade = event.target as Grenade;
+            const center = grenade.box.center;
+            for (const spawner of this.spawners) {
+                spawner.each((enemy: Enemy) => {
+                    const dist = enemy.box.center.sub(center).length;
+                    if (grenade.rad >= dist) {
+                        this.emit(new GameEvent("kill", enemy, grenade));
+                        enemy.parent.removeChild(enemy);
+                    }
+                });
+            }
+        });
     }
 
     render(ctx: CanvasRenderingContext2D) {
@@ -79,12 +96,12 @@ export default class GameScene extends GameObject {
     }
 
     updateProjectile(delta: number) {
-        this.hero.bullets.children.forEach((item: Bullet) => {
+        this.hero.bullets.each((item: Bullet) => {
             if (this.map.collideX(item.box) || this.map.collideY(item.box)) {
                 item.parent.removeChild(item);
             }
         });
-        this.hero.grenades.children.forEach((item: Grenade) => {
+        this.hero.grenades.each((item: Grenade) => {
             if (this.map.collideX(item.box) || this.map.collideY(item.box)) {
                 item.emit(new GameEvent("grenade", item));
                 item.parent.removeChild(item);

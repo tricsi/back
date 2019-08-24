@@ -43,6 +43,12 @@ export class GameObject {
         }
     }
 
+    each(callback: (item: GameObject, index?: number) => void) {
+        for (let i = this.children.length - 1; i >= 0; i--) {
+            callback(this.children[i], i);
+        }
+    }
+
     on(event:string, listener: {(event:GameEvent): void}): void {
         const events = event.match(/[a-zA-Z]+/g);
         if (!events) {
