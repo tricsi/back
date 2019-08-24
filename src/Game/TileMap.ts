@@ -1,6 +1,5 @@
-import GameObject from "./GameObject";
+import { IMovable, GameObject } from "./GameEngine";
 import { Box, Vec } from "./Math";
-import IMovable from "./IMovable";
 
 export enum Tile {
     WALL = 0,
@@ -78,7 +77,7 @@ export default class TileMap extends GameObject {
         ctx.save();
         for (let y = 0; y < this.height; y++) {
             for (let x = 0; x < this.width; x++) {
-                if (this.tiles[y][x] === Tile.GROUND) {
+                if (this.tiles[y][x] !== Tile.WALL) {
                     ctx.fillStyle = "#ccc";
                     ctx.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
                     // ctx.fillStyle = "#eee";

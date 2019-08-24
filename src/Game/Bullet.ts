@@ -1,5 +1,5 @@
-import GameObject from "./GameObject";
 import { Vec, Box } from "./Math";
+import { GameObject } from "./GameEngine";
 
 export default class Bullet extends GameObject {
 

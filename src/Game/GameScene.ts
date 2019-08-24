@@ -1,5 +1,5 @@
 import Hero from "./Hero";
-import GameObject from "./GameObject";
+import { GameObject } from "./GameEngine";
 import { Input } from "../common";
 import TileMap, { Tile } from "./TileMap";
 import EnemySpawner from "./EnemySpawner";
@@ -7,7 +7,7 @@ import Enemy from "./Enemy";
 import { Vec, Box } from "./Math";
 import Bullet from "./Bullet";
 
-export default class GameScene extends GameObject{
+export default class GameScene extends GameObject {
 
     hero = new Hero(() => new Bullet());
     map = new TileMap(12, 16, [1, 2, 3, 4, 0]);
@@ -25,9 +25,9 @@ export default class GameScene extends GameObject{
         this.map.getPosByTile(Tile.HOLE).forEach(pos => {
             const spawner = new EnemySpawner(
                 () => new Enemy(this.hero),
-                (item: Enemy) => item.pos.set(pos),
+                (item: Enemy) => item.pos = pos,
                 pos,
-                100,
+                0,
                 20
             );
             this.spawners.push(spawner);
@@ -43,53 +43,62 @@ export default class GameScene extends GameObject{
     }
 
     update(delta: number) {
-        this.cam.pos.y += this.spd * delta;
         super.update(delta);
-        this.updateHero(this.hero, delta);
-        this.hero.children.forEach((item: Bullet) => this.updateProjectile(item, delta));
-        this.map.createNav(this.hero.box.center);
-        this.spawners.forEach(spawner => {
-            spawner.children.forEach((item: Enemy) => this.map.lockNav(item.box.center));
-        });
-        this.spawners.forEach(spawner => {
-            spawner.children.forEach((item: Enemy) => this.updateEnemy(item, delta));
-        });
+        this.cam.pos.y += this.spd * delta;
+        this.updateHero(delta);
+        this.updateProjectile(delta);
+        this.updateMap();
+        this.updateSpawners(delta);
     }
 
-    updateHero(hero: Hero, delta: number) {
-        const map = this.map;
-        const speed = this.spd * delta;
+    updateHero(delta: number) {
+        const hero = this.hero;
         if (hero.dir.x) {
             hero.pos.x += hero.dir.x * hero.spd * delta;
-            map.collideX(hero.box, true);
+            this.map.collideX(hero.box, true);
         }
         if (hero.dir.y) {
             hero.pos.y += hero.dir.y * hero.spd * delta;
         }
-        hero.pos.y += speed;
-        hero.aim.set(this.aim).add(-this.cam.pos.x, this.cam.pos.y);
-        map.collideY(hero.box, true);
-        const bottom = this.cam.pos.y + this.cam.height - hero.pos.y - hero.box.height
+        hero.pos.y += this.spd * delta;
+        this.map.collideY(hero.box, true);
+
+        const cam = this.cam;
+        hero.aim.set(this.aim).add(-cam.pos.x, cam.pos.y);
+        const bottom = cam.pos.y + cam.height - hero.pos.y - hero.box.height
         if (bottom < 0) {
             hero.pos.y += bottom;
         }
     }
 
-    updateEnemy(item: Enemy, delta: number) {
-        this.map.setDirection(item);
-        const speed = item.spd * delta;
-        item.pos.add(item.dir.x * speed, item.dir.y * speed);
+    updateProjectile(delta: number) {
+        this.hero.children.forEach((item: Bullet) => {
+            const speed = item.spd * delta;
+            item.pos.add(item.dir.x * speed, item.dir.y * speed);
+            if (
+                this.map.collideX(item.box) ||
+                this.map.collideY(item.box)
+            ) {
+                item.parent.removeChild(item);
+            }
+        });
     }
 
-    updateProjectile(item: Bullet, delta: number) {
-        const speed = item.spd * delta;
-        item.pos.add(item.dir.x * speed, item.dir.y * speed);
-        if (
-            this.map.collideX(item.box) ||
-            this.map.collideY(item.box)
-        ) {
-            item.parent.removeChild(item);
-        }
+    updateMap() {
+        this.map.createNav(this.hero.box.center);
+        this.spawners.forEach(spawner => {
+            spawner.children.forEach((item: Enemy) => this.map.lockNav(item.box.center));
+        });
+    }
+
+    updateSpawners(delta: number) {
+        this.spawners.forEach(spawner => {
+            spawner.children.forEach((item: Enemy) => {
+                this.map.setDirection(item);
+                const speed = item.spd * delta;
+                item.pos.add(item.dir.x * speed, item.dir.y * speed);
+            });
+        });
     }
 
     pointer(x: number, y: number) {

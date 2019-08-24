@@ -1,9 +1,7 @@
-import GameObject from "./GameObject";
 import { Vec, Box } from "./Math";
 import Hero from "./Hero";
 import Bullet from "./Bullet";
-import ObjectSpawner from "./ObjectSpawner";
-import IMovable from "./IMovable";
+import { IMovable, GameObject, ObjectSpawner } from "./GameEngine";
 
 export default class Enemy extends GameObject implements IMovable
 {

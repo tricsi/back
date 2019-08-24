@@ -1,7 +1,6 @@
 import { Box, Vec } from "./Math";
-import ObjectPool from "./ObjectPool";
 import Bullet from "./Bullet";
-import IMovable from "./IMovable";
+import { ObjectPool, IMovable } from "./GameEngine";
 
 export default class Hero extends ObjectPool implements IMovable {
 

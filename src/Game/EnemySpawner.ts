@@ -1,7 +1,6 @@
-import ObjectSpawner from "./ObjectSpawner";
+import { ObjectSpawner } from "./GameEngine";
 
-export default class EnemySpawner extends ObjectSpawner
-{
+export default class EnemySpawner extends ObjectSpawner {
 
     render(ctx: CanvasRenderingContext2D): void {
         super.render(ctx);
