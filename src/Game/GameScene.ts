@@ -4,7 +4,7 @@ import { Input } from "../common";
 import TileMap, { Tile } from "./TileMap";
 import Enemy, { EnemySpawner } from "./Enemy";
 import { Vec, Box } from "./Math";
-import { Bullet } from "./Weapon";
+import { Bullet, Grenade } from "./Weapon";
 
 export default class GameScene extends GameObject {
 
@@ -13,24 +13,25 @@ export default class GameScene extends GameObject {
     cam = new Box(new Vec(0, -64), 192, 256);
     spd = 0.02;
     aim = new Vec();
-    spawners: EnemySpawner[] = [];
+    spawners: EnemySpawner[] = this.map.getPosByTile(Tile.HOLE).map(pos => {
+        const spawner = new EnemySpawner(
+            () => new Enemy(this.hero),
+            (item: Enemy) => item.pos.set(pos),
+            new Box(pos, 16, 16),
+            100, 20, 180, 320
+        );
+        return spawner;
+    });
 
     constructor() {
         super();
         this.hero.pos.set(96, 128);
         this.map.createNav(this.hero.box.center);
         this.addChild(this.map);
+        for (const spawner of this.spawners) {
+            this.addChild(spawner);
+        }
         this.addChild(this.hero);
-        this.map.getPosByTile(Tile.HOLE).forEach(pos => {
-            const spawner = new EnemySpawner(
-                () => new Enemy(this.hero),
-                (item: Enemy) => item.pos.set(pos),
-                new Box(pos, 16, 16),
-                100, 20, 180, 320
-            );
-            this.spawners.push(spawner);
-            this.addChild (spawner);
-        });
     }
 
     render(ctx: CanvasRenderingContext2D) {
@@ -50,11 +51,11 @@ export default class GameScene extends GameObject {
             cam.pos.y = bottom;
             speed = 0;
         }
+        super.update(delta);
         this.updateHero(delta, speed);
         this.updateProjectile(delta);
         this.updateMap();
         this.updateSpawners(delta);
-        super.update(delta);
     }
 
     updateHero(delta: number, speed: number) {
@@ -79,12 +80,13 @@ export default class GameScene extends GameObject {
 
     updateProjectile(delta: number) {
         this.hero.bullets.children.forEach((item: Bullet) => {
-            const speed = item.spd * delta;
-            item.pos.add(item.dir.x * speed, item.dir.y * speed);
-            if (
-                this.map.collideX(item.box) ||
-                this.map.collideY(item.box)
-            ) {
+            if (this.map.collideX(item.box) || this.map.collideY(item.box)) {
+                item.parent.removeChild(item);
+            }
+        });
+        this.hero.grenades.children.forEach((item: Grenade) => {
+            if (this.map.collideX(item.box) || this.map.collideY(item.box)) {
+                item.emit(new GameEvent("grenade", item));
                 item.parent.removeChild(item);
             }
         });
@@ -131,5 +133,8 @@ export default class GameScene extends GameObject {
         }
         this.hero.dir.set(x, y).normalize();
         this.hero.fire = keys[Input.FIRE] === true;
+        if (keys[Input.ALT] && down) {
+            this.hero.grenade();
+        }
     }
 }

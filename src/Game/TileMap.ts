@@ -21,6 +21,9 @@ export default class TileMap extends GameObject {
 
     static readonly MAX_NAV = 30;
 
+    height: number = 0;
+    tiles: number[][] = [];
+    nav: number[][] = [];
     segments: TileSegment[] = [
         new TileSegment([[5],[1,1,11],[2,4,8]]), // 0 = end
         new TileSegment([[1,1,11],[12]], [[2,4,3]]), // 1 = start
@@ -28,9 +31,6 @@ export default class TileMap extends GameObject {
         new TileSegment([[6],[4,0,4,8,12]]), // 3 = block
         new TileSegment([[6],[3,0,2,4,8,10,12]]), // 4 = blocks
     ];
-    height: number = 0;
-    tiles: number[][] = [];
-    nav: number[][] = [];
 
     constructor(
         public width: number,
@@ -78,7 +78,7 @@ export default class TileMap extends GameObject {
         for (let y = 0; y < this.height; y++) {
             for (let x = 0; x < this.width; x++) {
                 if (this.tiles[y][x] !== Tile.WALL) {
-                    ctx.fillStyle = "#ccc";
+                    ctx.fillStyle = "#666";
                     ctx.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
                     // ctx.fillStyle = "#eee";
                     // ctx.fillText(this.nav[y][x].toString(), x * size + 2, y * size + 10)

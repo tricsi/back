@@ -13,7 +13,8 @@ let running = false;
 let time: number;
 
 function render() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     scene.render(ctx);
 }
 
@@ -54,11 +55,11 @@ function bind() {
         const ratio = canvas.height / body.clientHeight;
         scene.pointer(e.clientX * ratio, e.clientY * ratio);
     });
-    on(document, 'contextmenu', (e: MouseEvent) => e.preventDefault());
     on(window, "resize", resize);
 }
 
 on(window, "load", () => {
+    on(document, 'contextmenu', (e: MouseEvent) => e.preventDefault());
     resize();
     render();
 });

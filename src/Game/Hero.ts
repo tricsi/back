@@ -10,7 +10,7 @@ export default class Hero extends GameObject implements IMovable {
     fire = false;
     fireTime = 0;
     bullets = new ObjectPool(() => new Bullet());
-    grenades= new ObjectPool(() => new Grenade());
+    grenades = new ObjectPool(() => new Grenade());
 
     constructor(
         public box: Box,
@@ -18,6 +18,7 @@ export default class Hero extends GameObject implements IMovable {
         public fireSpeed: number
     ) {
         super();
+        this.addChild(this.grenades);
         this.addChild(this.bullets);
     }
 
@@ -26,7 +27,7 @@ export default class Hero extends GameObject implements IMovable {
         const box = this.box;
         const pos = this.pos;
         ctx.save();
-        ctx.fillStyle = "blue";
+        ctx.fillStyle = "#00c";
         ctx.fillRect(pos.x, pos.y, box.width, box.height);
         ctx.restore();
     }
@@ -39,11 +40,20 @@ export default class Hero extends GameObject implements IMovable {
             this.bullets.create((bullet: Bullet) => {
                 const box = bullet.box;
                 const center = this.box.center;
-                bullet.pos.set(center.x - box.width / 2, center.y - box.height / 2);
-                bullet.dir = this.aim.clone().sub(center).normalize();
+                bullet.dir.set(this.aim.clone().sub(center).normalize());
+                bullet.pos.set(center.sub(box.width / 2, box.height / 2));
                 this.emit(new GameEvent("fire", this, bullet));
             });
         }
     }
 
+    grenade() {
+        this.grenades.create((item: Grenade) => {
+            const box = item.box;
+            const center = this.box.center;
+            item.dir.set(this.aim.clone().sub(center).normalize());
+            item.pos.set(center.sub(box.width / 2, box.height / 2));
+            item.aim.set(this.aim);
+        });
+    }
 }

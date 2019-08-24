@@ -20,7 +20,7 @@ export default class Enemy extends GameObject implements IMovable
         const box = this.box;
         const pos = this.pos;
         ctx.save();
-        ctx.fillStyle = "red";
+        ctx.fillStyle = "#c00";
         ctx.fillRect(Math.round(pos.x), Math.round(pos.y), box.width, box.height);
         ctx.restore();
     }
@@ -35,7 +35,7 @@ export default class Enemy extends GameObject implements IMovable
             if (this.box.collide((<Bullet>bullet).box)) {
                 this.emit(new GameEvent("kill", this, bullet));
                 this.parent.removeChild(this);
-                this.hero.removeChild(bullet);
+                bullet.parent.removeChild(bullet);
                 return;
             }
         }
@@ -80,18 +80,17 @@ export class EnemySpawner extends ObjectSpawner {
     }
 
     render(ctx: CanvasRenderingContext2D): void {
-        super.render(ctx);
-        if (!this.active) {
-            return;
+        if (this.active) {
+            const pos = this.box.center;
+            ctx.save();
+            ctx.fillStyle = "#000";
+            ctx.beginPath();
+            ctx.arc(Math.round(pos.x), Math.round(pos.y), this.box.width / 2, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
         }
-        const pos = this.box.center;
-        ctx.save();
-        ctx.fillStyle = "grey";
-        ctx.beginPath();
-        ctx.arc(Math.round(pos.x), Math.round(pos.y), this.box.width / 2, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
+        super.render(ctx);
     }
 
 }
