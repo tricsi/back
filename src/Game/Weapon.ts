@@ -1,7 +1,7 @@
 import { Vec, Box } from "./Math";
 import { GameObject } from "./GameEngine";
 
-export default class Bullet extends GameObject {
+export class Bullet extends GameObject {
 
     pos = new Vec();
     dir = new Vec();
@@ -18,5 +18,9 @@ export default class Bullet extends GameObject {
         ctx.fill();
         ctx.restore();
     }
+
+}
+
+export class Grenade extends GameObject {
 
 }

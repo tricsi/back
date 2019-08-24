@@ -4,11 +4,11 @@ import { Input } from "../common";
 import TileMap, { Tile } from "./TileMap";
 import Enemy, { EnemySpawner } from "./Enemy";
 import { Vec, Box } from "./Math";
-import Bullet from "./Bullet";
+import { Bullet } from "./Weapon";
 
 export default class GameScene extends GameObject {
 
-    hero = new Hero(() => new Bullet());
+    hero = new Hero(new Box(new Vec(0, 100), 16, 24), 0.2, 100);
     map = new TileMap(12, 16, [1, 2, 3, 4, 0]);
     cam = new Box(new Vec(0, -64), 192, 256);
     spd = 0.02;
@@ -78,7 +78,7 @@ export default class GameScene extends GameObject {
     }
 
     updateProjectile(delta: number) {
-        this.hero.children.forEach((item: Bullet) => {
+        this.hero.bullets.children.forEach((item: Bullet) => {
             const speed = item.spd * delta;
             item.pos.add(item.dir.x * speed, item.dir.y * speed);
             if (

@@ -68,8 +68,8 @@ on(document, "click", async () => {
         return;
     }
     await Sfx.init();
-    bind();
     time = new Date().getTime();
     running = true;
     update();
+    bind();
 });

@@ -1,6 +1,6 @@
 import { Vec, Box } from "./Math";
 import Hero from "./Hero";
-import Bullet from "./Bullet";
+import { Bullet } from "./Weapon";
 import { IMovable, GameObject, ObjectSpawner, GameEvent } from "./GameEngine";
 
 export default class Enemy extends GameObject implements IMovable
@@ -31,7 +31,7 @@ export default class Enemy extends GameObject implements IMovable
             this.parent.removeChild(this);
             return;
         }
-        for (const bullet of this.hero.children) {
+        for (const bullet of this.hero.bullets.children) {
             if (this.box.collide((<Bullet>bullet).box)) {
                 this.emit(new GameEvent("kill", this, bullet));
                 this.parent.removeChild(this);

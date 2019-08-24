@@ -1,17 +1,25 @@
 import { Box, Vec } from "./Math";
-import Bullet from "./Bullet";
-import { ObjectPool, IMovable, GameEvent } from "./GameEngine";
+import { Bullet, Grenade } from "./Weapon";
+import { ObjectPool, IMovable, GameEvent, GameObject } from "./GameEngine";
 
-export default class Hero extends ObjectPool implements IMovable {
+export default class Hero extends GameObject implements IMovable {
 
-    pos = new Vec(0, 100);
+    pos = this.box.pos;
     dir = new Vec();
     aim = new Vec();
-    spd = 0.2;
-    box = new Box(this.pos, 16, 24);
-    fire: boolean = false;
-    fireTime: number = 0;
-    fireSpeed:number = 100;
+    fire = false;
+    fireTime = 0;
+    bullets = new ObjectPool(() => new Bullet());
+    grenades= new ObjectPool(() => new Grenade());
+
+    constructor(
+        public box: Box,
+        public spd: number,
+        public fireSpeed: number
+    ) {
+        super();
+        this.addChild(this.bullets);
+    }
 
     render(ctx: CanvasRenderingContext2D) {
         super.render(ctx);
@@ -25,11 +33,10 @@ export default class Hero extends ObjectPool implements IMovable {
 
     update(delta: number) {
         super.update(delta);
-
         this.fireTime -= delta;
         if (this.fire && this.fireTime <= 0) {
             this.fireTime = this.fireSpeed;
-            this.create((bullet: Bullet) => {
+            this.bullets.create((bullet: Bullet) => {
                 const box = bullet.box;
                 const center = this.box.center;
                 bullet.pos.set(center.x - box.width / 2, center.y - box.height / 2);
