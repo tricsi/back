@@ -9,7 +9,9 @@ const canvas = <HTMLCanvasElement>$("#game");
 const ctx = canvas.getContext("2d");
 const scene = new GameScene();
 const keys: boolean[] = [];
+let running = false;
 let time: number;
+
 function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     scene.render(ctx);
@@ -56,10 +58,18 @@ function bind() {
     on(window, "resize", resize);
 }
 
-on(window, "load", async () => {
-    Sfx.init();
+on(window, "load", () => {
     resize();
+    render();
+});
+
+on(document, "click", async () => {
+    if (running) {
+        return;
+    }
+    await Sfx.init();
     bind();
     time = new Date().getTime();
+    running = true;
     update();
 });

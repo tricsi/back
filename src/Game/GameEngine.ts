@@ -7,10 +7,28 @@ export interface IMovable {
     spd: number;
 }
 
-export abstract class GameObject {
+export class GameEvent {
+
+    stoped: boolean = false;
+
+    constructor(
+        public type: string,
+        public target: GameObject = null,
+        public payload: any = null,
+        public bubble: boolean = true
+    ) {
+    }
+
+    stop() {
+        this.stoped = true;
+    }
+}
+
+export class GameObject {
 
     parent: GameObject;
     children: GameObject[] = [];
+    listeners: {[event: string]: {(event:GameEvent): void}[]} = { all: [] };
 
     addChild(child: GameObject) {
         this.children.push(child);
@@ -22,6 +40,39 @@ export abstract class GameObject {
         if (index >= 0) {
             this.children.splice(index, 1);
             child.parent = null;
+        }
+    }
+
+    on(event:string, listener: {(event:GameEvent): void}): void {
+        const events = event.match(/[a-zA-Z]+/g);
+        if (!events) {
+            return;
+        }
+        events.forEach(event => {
+            if (!(event in this.listeners)) {
+                this.listeners[event] = [];
+            }
+            this.listeners[event].push(listener);
+        });
+    }
+
+    emit(event: GameEvent): void {
+        for (const listener of this.listeners["all"]) {
+            if (event.stoped) {
+                return;
+            }
+            listener(event);
+        };
+        if (event.type in this.listeners) {
+            for (const listener of this.listeners[event.type]) {
+                if (event.stoped) {
+                    return;
+                }
+                listener(event);
+            };
+        }
+        if (event.bubble && this.parent) {
+            this.parent.emit(event);
         }
     }
 
@@ -65,13 +116,13 @@ export class ObjectPool extends GameObject {
 export class ObjectSpawner extends ObjectPool
 {
 
-    time = 0;
-    box = new Box(this.pos, 16, 16);
+    pos: Vec = this.box.pos;
+    time: number = 0;
 
     constructor(
         protected factory: () => GameObject,
         protected init: (item: GameObject) => void,
-        public pos: Vec = new Vec(),
+        public box: Box,
         public period: number = 0,
         public limit: number = 0
     ) {

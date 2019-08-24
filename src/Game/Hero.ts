@@ -1,6 +1,6 @@
 import { Box, Vec } from "./Math";
 import Bullet from "./Bullet";
-import { ObjectPool, IMovable } from "./GameEngine";
+import { ObjectPool, IMovable, GameEvent } from "./GameEngine";
 
 export default class Hero extends ObjectPool implements IMovable {
 
@@ -28,13 +28,14 @@ export default class Hero extends ObjectPool implements IMovable {
 
         this.fireTime -= delta;
         if (this.fire && this.fireTime <= 0) {
+            this.fireTime = this.fireSpeed;
             this.create((bullet: Bullet) => {
                 const box = bullet.box;
                 const center = this.box.center;
                 bullet.pos.set(center.x - box.width / 2, center.y - box.height / 2);
                 bullet.dir = this.aim.clone().sub(center).normalize();
+                this.emit(new GameEvent("fire", this, bullet));
             });
-            this.fireTime = this.fireSpeed;
         }
     }
 

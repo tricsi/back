@@ -22,9 +22,9 @@ export default class TileMap extends GameObject {
     static readonly MAX_NAV = 30;
 
     segments: TileSegment[] = [
-        new TileSegment([[12]]), // 0 = end
-        new TileSegment([[12]], [[2,3,3,10,5]]), // 1 = start
-        new TileSegment([[4,3,12],[6,3,9],[4,0,9]]), // 2 = corridor
+        new TileSegment([[5],[1,1,11],[2,4,8]]), // 0 = end
+        new TileSegment([[1,1,11],[12]], [[2,4,3]]), // 1 = start
+        new TileSegment([[4,3,12],[6,3,9],[4,0,9]], [[2,10,2]]), // 2 = corridor
         new TileSegment([[6],[4,0,4,8,12]]), // 3 = block
         new TileSegment([[6],[3,0,2,4,8,10,12]]), // 4 = blocks
     ];
@@ -67,7 +67,7 @@ export default class TileMap extends GameObject {
     loadPoi(data: number[][], top: number) {
         for (const line of data) {
             for (let j = 1; j < line.length; j += 2) {
-                this.setTile(line[j], line[j + 1], line[0]);
+                this.setTile(line[j], line[j + 1] + top, line[0]);
             }
         }
     }
