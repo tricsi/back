@@ -1,21 +1,22 @@
 import Hero from "./Hero";
-import { GameObject, GameEvent, ObjectPool } from "./GameEngine";
+import { GameObject, GameEvent, ObjectPool, IKillable } from "./GameEngine";
 import { Input } from "../common";
 import { TileMap, Tile } from "./TileMap";
 import { EnemyRunner, EnemySpawner, EnemyCamper, EnemyShooter, Enemy } from "./Enemy";
 import { Vec, Box } from "./Math";
 import { Bullet, Grenade } from "./Weapon";
+import Hud from "./Hud";
 
 export default class GameScene extends GameObject {
 
-    hero = new Hero(new Box(new Vec(0, 100), 16, 24), 0.2);
+    hero = new Hero(new Box(new Vec(0, 100), 16, 24), 0.2, 100);
     map = new TileMap(12, 16, [1, 2, 3, 4, 0]);
     cam = new Box(new Vec(0, -64), 192, 256);
     spd = 0.02;
     aim = new Vec();
-    camps: ObjectPool = new ObjectPool(() => new EnemyCamper(this.hero));
-    shooters: ObjectPool = new ObjectPool(() => new EnemyShooter(this.hero, 240));
-    spawners: EnemySpawner[] = [];
+    camps: ObjectPool = new ObjectPool(() => new EnemyCamper(this.hero, 20, 0, 10));
+    shots: ObjectPool = new ObjectPool(() => new EnemyShooter(this.hero, 50, 0, 50, 240));
+    holes: EnemySpawner[] = [];
 
     constructor() {
         super();
@@ -26,41 +27,60 @@ export default class GameScene extends GameObject {
             this.camps.create((item: EnemyCamper) => item.pos.set(pos));
         }
         for (const pos of this.map.getPosByTile(Tile.SHOT)) {
-            this.shooters.create((item: EnemyShooter) => item.pos.set(pos));
+            this.shots.create((item: EnemyShooter) => item.pos.set(pos));
         }
         for (const pos of this.map.getPosByTile(Tile.HOLE)) {
-            const spawner = new EnemySpawner(
-                () => new EnemyRunner(this.hero),
+            const hole = new EnemySpawner(
+                () => new EnemyRunner(this.hero, 20, 10, 25),
                 (item: EnemyRunner) => item.pos.set(pos),
                 new Box(pos, 16, 16),
                 100, 20, 180, 320
             );
-            this.spawners.push(spawner);
-            this.addChild(spawner);
+            this.holes.push(hole);
+            this.addChild(hole);
         }
         this.addChild(this.camps)
-            .addChild(this.shooters)
-            .addChild(this.hero);
+            .addChild(this.shots)
+            .addChild(this.hero)
+            .addChild(new Hud(this.hero));
         this.bind();
     }
 
     bind() {
-        this.on("grenade", (event: GameEvent) => {
+        this.on("hit", (event: GameEvent) => {
+            const target = event.target;
+            if (target instanceof Enemy) {
+                target.hp -= event.payload;
+                if (target.hp < 0) {
+                    this.emit(new GameEvent("kill", target));
+                    this.hero.score += target.score;
+                    target.parent.removeChild(target);
+                    target.hp = target.maxHp;
+                }
+            }
+            if (target instanceof Hero) {
+                target.hp -= event.payload;
+                if (target.hp < 0) {
+                    target.hp = 0;
+                }
+            }
+        });
+
+        this.on("explode", (event: GameEvent) => {
             const grenade = event.target as Grenade;
-            this.camps.each((enemy: EnemyCamper) => this.grenade(grenade, enemy));
-            this.shooters.each((enemy: EnemyShooter) => this.grenade(grenade, enemy));
-            for (const spawner of this.spawners) {
-                spawner.each((enemy: EnemyRunner) => this.grenade(grenade, enemy));
+            this.camps.each((enemy: EnemyCamper) => this.explode(grenade, enemy));
+            this.shots.each((enemy: EnemyShooter) => this.explode(grenade, enemy));
+            for (const spawner of this.holes) {
+                spawner.each((enemy: EnemyRunner) => this.explode(grenade, enemy));
             }
         });
     }
 
-    grenade(grenade: Grenade, enemy: Enemy) {
+    explode(grenade: Grenade, item: Enemy) {
         const center = grenade.box.center;
-        const dist = enemy.box.center.sub(center).length;
+        const dist = item.box.center.sub(center).length;
         if (grenade.radius >= dist) {
-            this.emit(new GameEvent("kill", enemy, grenade));
-            enemy.parent.removeChild(enemy);
+            this.emit(new GameEvent("hit", item, grenade.dmg));
         }
     }
 
@@ -116,11 +136,11 @@ export default class GameScene extends GameObject {
         });
         this.hero.grenades.each((item: Grenade) => {
             if (this.map.collideX(item.box) || this.map.collideY(item.box)) {
-                item.emit(new GameEvent("grenade", item));
+                item.emit(new GameEvent("explode", item));
                 item.parent.removeChild(item);
             }
         });
-        this.shooters.each((enemy: EnemyShooter) => {
+        this.shots.each((enemy: EnemyShooter) => {
             enemy.gun.each((item: Bullet) => {
                 if (this.map.collideX(item.box) || this.map.collideY(item.box)) {
                     item.parent.removeChild(item);
@@ -131,7 +151,7 @@ export default class GameScene extends GameObject {
 
     updateMap() {
         this.map.createNav(this.hero.box.center);
-        for (const spawner of this.spawners) {
+        for (const spawner of this.holes) {
             for (const item of spawner.children) {
                 this.map.lockNav(item.box.center);
             }
@@ -139,7 +159,7 @@ export default class GameScene extends GameObject {
     }
 
     updateSpawners(delta: number) {
-        for (const spawner of this.spawners) {
+        for (const spawner of this.holes) {
             spawner.toggle(this.hero.pos);
             for (const item of spawner.children) {
                 this.map.setDirection(item);
@@ -171,7 +191,7 @@ export default class GameScene extends GameObject {
         this.hero.dir.set(x, y).normalize();
         this.hero.fire = keys[Input.FIRE] === true;
         if (keys[Input.ALT] && down) {
-            this.hero.grenade();
+            this.hero.launch();
         }
     }
 }

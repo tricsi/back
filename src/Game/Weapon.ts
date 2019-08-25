@@ -1,23 +1,24 @@
 import { Vec, Box } from "./Math";
-import { GameObject, IMovable, GameEvent, ObjectPool } from "./GameEngine";
+import { GameObject, IMovable, GameEvent, ObjectPool, IKiller } from "./GameEngine";
 
 export class Weapon extends ObjectPool {
 
     protected time = 0;
+    public children: Bullet[];
 
     constructor(
         protected factory: () => GameObject,
         public spd: number,
         public ammo: number,
-        public capacity: number = 0
+        public magazine: number = 0
     ) {
         super(factory);
     }
 
     load(ammo: number) {
         this.ammo += ammo;
-        if (this.capacity && this.ammo > this.capacity) {
-            this.ammo = this.capacity;
+        if (this.magazine && this.ammo > this.magazine) {
+            this.ammo = this.magazine;
         }
     }
 
@@ -36,7 +37,7 @@ export class Weapon extends ObjectPool {
     }
 }
 
-export class Bullet extends GameObject implements IMovable {
+export class Bullet extends GameObject implements IMovable, IKiller {
 
     pos = new Vec();
     dir = new Vec();
@@ -44,6 +45,7 @@ export class Bullet extends GameObject implements IMovable {
 
     constructor(
         public spd: number,
+        public dmg: number,
         public size: number,
         public color: string
     ) {
@@ -73,16 +75,17 @@ export class Grenade extends Bullet {
 
     constructor(
         public spd: number,
+        public dmg: number,
         public size: number,
         public radius: number
     ) {
-        super(spd, size, "#0f0");
+        super(spd, dmg, size, "#0f0");
     }
 
     update(delta: number) {
         if (this.box.center.sub(this.aim).length <= this.spd * delta) {
             this.pos.set(this.aim);
-            this.emit(new GameEvent("grenade", this));
+            this.emit(new GameEvent("explode", this));
             this.parent.removeChild(this);
         } else {
             super.update(delta);

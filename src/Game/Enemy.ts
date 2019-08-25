@@ -1,28 +1,33 @@
 import { Vec, Box } from "./Math";
 import Hero from "./Hero";
 import { Bullet, Weapon } from "./Weapon";
-import { IMovable, GameObject, ObjectSpawner, GameEvent, ObjectPool } from "./GameEngine";
+import { IMovable, GameObject, ObjectSpawner, GameEvent, IKillable, IKiller } from "./GameEngine";
 
-export class Enemy extends GameObject {
+export class Enemy extends GameObject implements IKillable, IKiller {
 
+    hp = this.maxHp;
     pos = new Vec();
     box = new Box(this.pos, 16);
 
-    constructor(public hero: Hero) {
+    constructor(
+        public hero: Hero,
+        public maxHp: number,
+        public dmg: number,
+        public score: number
+    ) {
         super();
     }
 
     update(delta: number) {
         super.update(delta);
         if (this.box.collide(this.hero.box)) {
-            this.emit(new GameEvent("hit", this));
+            this.emit(new GameEvent("hit", this.hero, this.dmg));
             this.parent.removeChild(this);
             return;
         }
         for (const bullet of this.hero.gun.children) {
-            if (this.box.collide((<Bullet>bullet).box)) {
-                this.emit(new GameEvent("kill", this, bullet));
-                this.parent.removeChild(this);
+            if (this.box.collide(bullet.box)) {
+                this.emit(new GameEvent("hit", this, bullet.dmg));
                 bullet.parent.removeChild(bullet);
                 return;
             }
@@ -49,13 +54,16 @@ export class EnemyCamper extends Enemy {
 
 export class EnemyShooter extends Enemy {
 
-    gun = new Weapon(() => new Bullet(0.1, 6, "#fff"), 500, 9999);
+    gun = new Weapon(() => new Bullet(0.1, 10, 6, "#fff"), 500, 9999);
 
     constructor(
         public hero: Hero,
+        public maxHp: number,
+        public dmg: number,
+        public score: number,
         public far: number
     ) {
-        super(hero);
+        super(hero, maxHp, dmg, score);
         this.addChild(this.gun);
     }
 
@@ -76,8 +84,7 @@ export class EnemyShooter extends Enemy {
         super.update(delta);
         this.gun.each((bullet: Bullet) => {
             if (bullet.box.collide(this.hero.box)) {
-                this.emit(new GameEvent("hit", bullet));
-                bullet.parent.removeChild(bullet);
+                this.emit(new GameEvent("hit", this.hero, bullet.dmg));
             }
         });
         const center = this.box.center;
@@ -89,7 +96,7 @@ export class EnemyShooter extends Enemy {
             const box = bullet.box;
             bullet.dir.set(diff.normalize());
             bullet.pos.set(center.sub(box.width / 2, box.height / 2));
-            this.emit(new GameEvent("fire", this, bullet));
+            this.emit(new GameEvent("fire", bullet));
         });
     }
 

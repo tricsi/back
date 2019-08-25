@@ -13,8 +13,7 @@ let running = false;
 let time: number;
 
 function render() {
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     scene.render(ctx);
 }
 
@@ -62,6 +61,7 @@ on(window, "load", () => {
     on(document, 'contextmenu', (e: MouseEvent) => e.preventDefault());
     resize();
     render();
+    bind();
 });
 
 on(document, "click", async () => {
@@ -72,5 +72,4 @@ on(document, "click", async () => {
     time = new Date().getTime();
     running = true;
     update();
-    bind();
 });

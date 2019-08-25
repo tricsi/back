@@ -4,14 +4,23 @@ body, html {
     margin: 0;
     padding: 0;
     overflow: hidden;
-    background-color: #fff;
-    color: #000;
+    background-color: #000;
+    color: #fff;
+}
+
+#hud {
+    position: absolute;
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    background: rgba(0, 0, 0, .7);
 }
 
 #game {
-    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
     height: 100%;
-    margin: 0 auto;
     cursor: crosshair;
     image-rendering: optimizeSpeed;
     image-rendering: -moz-crisp-edges;

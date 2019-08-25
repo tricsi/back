@@ -7,6 +7,16 @@ export interface IMovable {
     spd: number;
 }
 
+export interface IKiller {
+    dmg: number;
+}
+
+export interface IKillable {
+    hp: number;
+    maxHp: number;
+    score: number;
+}
+
 export class GameEvent {
 
     stoped: boolean = false;
