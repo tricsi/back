@@ -85,6 +85,7 @@ export class EnemyShooter extends Enemy {
         this.gun.each((bullet: Bullet) => {
             if (bullet.box.collide(this.hero.box)) {
                 this.emit(new GameEvent("hit", this.hero, bullet.dmg));
+                bullet.parent.removeChild(bullet);
             }
         });
         const center = this.box.center;
