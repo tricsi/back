@@ -1,6 +1,6 @@
 import { Box, Vec } from "./Math";
-import { Bullet, Grenade } from "./Weapon";
-import { ObjectPool, IMovable, GameEvent, GameObject } from "./GameEngine";
+import { Bullet, Grenade, Weapon } from "./Weapon";
+import { IMovable, GameEvent, GameObject } from "./GameEngine";
 
 export default class Hero extends GameObject implements IMovable {
 
@@ -8,18 +8,16 @@ export default class Hero extends GameObject implements IMovable {
     dir = new Vec();
     aim = new Vec();
     fire = false;
-    fireTime = 0;
-    bullets = new ObjectPool(() => new Bullet(0.4, "#0ff"));
-    grenades = new ObjectPool(() => new Grenade());
+    gun = new Weapon(() => new Bullet(0.4, 6, "#0ff"), 100, 9999);
+    grenades = new Weapon(() => new Grenade(0.2, 10, 48), 0, 5, 10);
 
     constructor(
         public box: Box,
-        public spd: number,
-        public fireSpeed: number
+        public spd: number
     ) {
         super();
         this.addChild(this.grenades);
-        this.addChild(this.bullets);
+        this.addChild(this.gun);
     }
 
     render(ctx: CanvasRenderingContext2D) {
@@ -34,10 +32,8 @@ export default class Hero extends GameObject implements IMovable {
 
     update(delta: number) {
         super.update(delta);
-        this.fireTime -= delta;
-        if (this.fire && this.fireTime <= 0) {
-            this.fireTime = this.fireSpeed;
-            this.bullets.create((bullet: Bullet) => {
+        if (this.fire) {
+            this.gun.create((bullet: Bullet) => {
                 const box = bullet.box;
                 const center = this.box.center;
                 bullet.dir.set(this.aim.clone().sub(center).normalize());
@@ -56,4 +52,5 @@ export default class Hero extends GameObject implements IMovable {
             item.aim.set(this.aim);
         });
     }
+
 }

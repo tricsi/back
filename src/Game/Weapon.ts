@@ -1,13 +1,52 @@
 import { Vec, Box } from "./Math";
-import { GameObject, IMovable, GameEvent } from "./GameEngine";
+import { GameObject, IMovable, GameEvent, ObjectPool } from "./GameEngine";
+
+export class Weapon extends ObjectPool {
+
+    protected time = 0;
+
+    constructor(
+        protected factory: () => GameObject,
+        public spd: number,
+        public ammo: number,
+        public capacity: number = 0
+    ) {
+        super(factory);
+    }
+
+    load(ammo: number) {
+        this.ammo += ammo;
+        if (this.capacity && this.ammo > this.capacity) {
+            this.ammo = this.capacity;
+        }
+    }
+
+    create(init: (item: GameObject) => void = null): GameObject {
+        if (this.ammo <= 0 || (this.spd && this.time)) {
+            return null;
+        }
+        this.ammo--;
+        this.time = this.spd;
+        return super.create(init);
+    }
+
+    update(delta: number) {
+        this.time = delta < this.time ? this.time - delta : 0;
+        super.update(delta);
+    }
+}
 
 export class Bullet extends GameObject implements IMovable {
 
     pos = new Vec();
     dir = new Vec();
-    box = new Box(this.pos, 6);
+    box = new Box(this.pos, this.size);
 
-    constructor(public spd: number, public color: string) {
+    constructor(
+        public spd: number,
+        public size: number,
+        public color: string
+    ) {
         super();
     }
 
@@ -16,7 +55,7 @@ export class Bullet extends GameObject implements IMovable {
         ctx.save();
         ctx.fillStyle = this.color;
         ctx.beginPath();
-        ctx.arc(pos.x, pos.y, this.box.width / 2, 0, Math.PI * 2);
+        ctx.arc(pos.x, pos.y, this.size / 2, 0, Math.PI * 2);
         ctx.closePath();
         ctx.fill();
         ctx.restore();
@@ -25,35 +64,28 @@ export class Bullet extends GameObject implements IMovable {
     update(delta: number) {
         this.pos.add(this.dir.clone().scale(this.spd * delta));
     }
+
 }
 
-export class Grenade extends GameObject implements IMovable{
+export class Grenade extends Bullet {
 
-    pos = new Vec();
-    dir = new Vec();
     aim = new Vec();
-    spd = 0.2;
-    box = new Box(this.pos, 10);
-    rad = 48;
 
-    render(ctx: CanvasRenderingContext2D) {
-        const pos = this.box.center;
-        ctx.save();
-        ctx.fillStyle = "#0f0";
-        ctx.beginPath();
-        ctx.arc(pos.x, pos.y, this.box.width / 2, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
+    constructor(
+        public spd: number,
+        public size: number,
+        public radius: number
+    ) {
+        super(spd, size, "#0f0");
     }
 
     update(delta: number) {
-        const speed = this.spd * delta;
-        if (this.box.center.sub(this.aim).length <= speed) {
+        if (this.box.center.sub(this.aim).length <= this.spd * delta) {
             this.pos.set(this.aim);
             this.emit(new GameEvent("grenade", this));
             this.parent.removeChild(this);
+        } else {
+            super.update(delta);
         }
-        this.pos.add(this.dir.clone().scale(speed));
     }
 }

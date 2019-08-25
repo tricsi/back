@@ -8,13 +8,13 @@ import { Bullet, Grenade } from "./Weapon";
 
 export default class GameScene extends GameObject {
 
-    hero = new Hero(new Box(new Vec(0, 100), 16, 24), 0.2, 100);
+    hero = new Hero(new Box(new Vec(0, 100), 16, 24), 0.2);
     map = new TileMap(12, 16, [1, 2, 3, 4, 0]);
     cam = new Box(new Vec(0, -64), 192, 256);
     spd = 0.02;
     aim = new Vec();
     camps: ObjectPool = new ObjectPool(() => new EnemyCamper(this.hero));
-    shooters: ObjectPool = new ObjectPool(() => new EnemyShooter(this.hero, 500, 240));
+    shooters: ObjectPool = new ObjectPool(() => new EnemyShooter(this.hero, 240));
     spawners: EnemySpawner[] = [];
 
     constructor() {
@@ -58,7 +58,7 @@ export default class GameScene extends GameObject {
     grenade(grenade: Grenade, enemy: Enemy) {
         const center = grenade.box.center;
         const dist = enemy.box.center.sub(center).length;
-        if (grenade.rad >= dist) {
+        if (grenade.radius >= dist) {
             this.emit(new GameEvent("kill", enemy, grenade));
             enemy.parent.removeChild(enemy);
         }
@@ -109,7 +109,7 @@ export default class GameScene extends GameObject {
     }
 
     updateProjectile(delta: number) {
-        this.hero.bullets.each((item: Bullet) => {
+        this.hero.gun.each((item: Bullet) => {
             if (this.map.collideX(item.box) || this.map.collideY(item.box)) {
                 item.parent.removeChild(item);
             }
@@ -121,7 +121,7 @@ export default class GameScene extends GameObject {
             }
         });
         this.shooters.each((enemy: EnemyShooter) => {
-            enemy.bullets.each((item: Bullet) => {
+            enemy.gun.each((item: Bullet) => {
                 if (this.map.collideX(item.box) || this.map.collideY(item.box)) {
                     item.parent.removeChild(item);
                 }

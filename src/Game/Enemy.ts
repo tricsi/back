@@ -1,12 +1,12 @@
 import { Vec, Box } from "./Math";
 import Hero from "./Hero";
-import { Bullet } from "./Weapon";
+import { Bullet, Weapon } from "./Weapon";
 import { IMovable, GameObject, ObjectSpawner, GameEvent, ObjectPool } from "./GameEngine";
 
 export class Enemy extends GameObject {
 
     pos = new Vec();
-    box = new Box(this.pos, 16, 16);
+    box = new Box(this.pos, 16);
 
     constructor(public hero: Hero) {
         super();
@@ -19,7 +19,7 @@ export class Enemy extends GameObject {
             this.parent.removeChild(this);
             return;
         }
-        for (const bullet of this.hero.bullets.children) {
+        for (const bullet of this.hero.gun.children) {
             if (this.box.collide((<Bullet>bullet).box)) {
                 this.emit(new GameEvent("kill", this, bullet));
                 this.parent.removeChild(this);
@@ -49,16 +49,14 @@ export class EnemyCamper extends Enemy {
 
 export class EnemyShooter extends Enemy {
 
-    fireTime = this.fireSpeed;
-    bullets = new ObjectPool(() => new Bullet(0.1, "#fff"));
+    gun = new Weapon(() => new Bullet(0.1, 6, "#fff"), 500, 9999);
 
     constructor(
         public hero: Hero,
-        public fireSpeed: number,
         public far: number
     ) {
         super(hero);
-        this.addChild(this.bullets);
+        this.addChild(this.gun);
     }
 
     render(ctx: CanvasRenderingContext2D) {
@@ -76,7 +74,7 @@ export class EnemyShooter extends Enemy {
 
     update(delta: number) {
         super.update(delta);
-        this.bullets.each((bullet: Bullet) => {
+        this.gun.each((bullet: Bullet) => {
             if (bullet.box.collide(this.hero.box)) {
                 this.emit(new GameEvent("hit", bullet));
                 bullet.parent.removeChild(bullet);
@@ -87,16 +85,12 @@ export class EnemyShooter extends Enemy {
         if (diff.length > this.far) {
             return;
         }
-        this.fireTime -= delta;
-        if (this.fireTime <= 0) {
-            this.fireTime = this.fireSpeed;
-            this.bullets.create((bullet: Bullet) => {
-                const box = bullet.box;
-                bullet.dir.set(diff.normalize());
-                bullet.pos.set(center.sub(box.width / 2, box.height / 2));
-                this.emit(new GameEvent("fire", this, bullet));
-            });
-        }
+        this.gun.create((bullet: Bullet) => {
+            const box = bullet.box;
+            bullet.dir.set(diff.normalize());
+            bullet.pos.set(center.sub(box.width / 2, box.height / 2));
+            this.emit(new GameEvent("fire", this, bullet));
+        });
     }
 
 }
@@ -156,16 +150,14 @@ export class EnemySpawner extends ObjectSpawner {
     }
 
     render(ctx: CanvasRenderingContext2D): void {
-        if (this.active) {
-            const pos = this.box.center;
-            ctx.save();
-            ctx.fillStyle = "#000";
-            ctx.beginPath();
-            ctx.arc(Math.round(pos.x), Math.round(pos.y), this.box.width / 2, 0, Math.PI * 2);
-            ctx.closePath();
-            ctx.fill();
-            ctx.restore();
-        }
+        const pos = this.box.center;
+        ctx.save();
+        ctx.fillStyle = "#000";
+        ctx.beginPath();
+        ctx.arc(Math.round(pos.x), Math.round(pos.y), this.box.width / 2, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
         super.render(ctx);
     }
 
