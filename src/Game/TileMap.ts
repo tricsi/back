@@ -7,6 +7,8 @@ export enum Tile {
     HOLE = 2,
     CAMP = 3,
     SHOT = 4,
+    WORM = 5,
+    ITEM = 6,
 }
 
 class TileSegment {
@@ -28,7 +30,7 @@ export class TileMap extends GameObject {
     nav: number[][] = [];
     segments: TileSegment[] = [
         new TileSegment([[5],[1,1,11],[2,4,8]]), // 0 = end
-        new TileSegment([[1,1,11],[11]], [[2,4,3],[3,0,11,1,11,2,11],[4,8,3]]), // 1 = start
+        new TileSegment([[1,1,11],[11]], [[2,4,3],[3,0,11,1,11,2,11],[4,8,3],[6,11,11]]), // 1 = start
         new TileSegment([[4,3,12],[6,3,9],[4,0,9]], [[2,10,2]]), // 2 = corridor
         new TileSegment([[6],[4,0,4,8,12]]), // 3 = block
         new TileSegment([[6],[3,0,2,4,8,10,12]]), // 4 = blocks

@@ -1,11 +1,12 @@
 import Hero from "./Hero";
-import { GameObject, GameEvent, ObjectPool, IKillable } from "./GameEngine";
+import { GameObject, GameEvent, ObjectPool } from "./GameEngine";
 import { Input } from "../common";
 import { TileMap, Tile } from "./TileMap";
 import { EnemyRunner, EnemySpawner, EnemyCamper, EnemyShooter, Enemy } from "./Enemy";
 import { Vec, Box } from "./Math";
 import { Bullet, Grenade } from "./Weapon";
 import Hud from "./Hud";
+import { Medkit, Item, AmmoBox, GrenadeBox } from "./Item";
 
 export default class GameScene extends GameObject {
 
@@ -14,7 +15,7 @@ export default class GameScene extends GameObject {
     cam = new Box(new Vec(0, -64), 192, 256);
     spd = 0.02;
     aim = new Vec();
-    camps: ObjectPool = new ObjectPool(() => new EnemyCamper(this.hero, 20, 0, 10));
+    camps: ObjectPool = new ObjectPool(() => new EnemyCamper(this.hero, 20, 5, 10));
     shots: ObjectPool = new ObjectPool(() => new EnemyShooter(this.hero, 50, 0, 50, 240));
     holes: EnemySpawner[] = [];
 
@@ -22,12 +23,26 @@ export default class GameScene extends GameObject {
         super();
         this.hero.pos.set(96, 128);
         this.map.createNav(this.hero.box.center);
-        this.addChild(this.map);
+        this.addChild(this.map)
+            .addChild(this.camps)
+            .addChild(this.shots)
+            .addChild(this.hero)
+            .addChild(new Hud(this.hero));
         for (const pos of this.map.getPosByTile(Tile.CAMP)) {
             this.camps.create((item: EnemyCamper) => item.pos.set(pos));
         }
         for (const pos of this.map.getPosByTile(Tile.SHOT)) {
             this.shots.create((item: EnemyShooter) => item.pos.set(pos));
+        }
+        for (const pos of this.map.getPosByTile(Tile.ITEM)) {
+            let item: Item;
+            switch (Math.floor(Math.random() * 2.999)) {
+                case 0: item = new Medkit(this.hero, 100, "#fff"); break;
+                case 1: item = new AmmoBox(this.hero, 200, "#0ff"); break;
+                case 2: item = new GrenadeBox(this.hero, 5, "#0c0"); break;
+            }
+            item.pos.set(pos);
+            this.addChild(item);
         }
         for (const pos of this.map.getPosByTile(Tile.HOLE)) {
             const hole = new EnemySpawner(
@@ -39,10 +54,6 @@ export default class GameScene extends GameObject {
             this.holes.push(hole);
             this.addChild(hole);
         }
-        this.addChild(this.camps)
-            .addChild(this.shots)
-            .addChild(this.hero)
-            .addChild(new Hud(this.hero));
         this.bind();
     }
 
