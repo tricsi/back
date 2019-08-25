@@ -9,7 +9,7 @@ export default class Hero extends GameObject implements IMovable {
     aim = new Vec();
     fire = false;
     fireTime = 0;
-    bullets = new ObjectPool(() => new Bullet());
+    bullets = new ObjectPool(() => new Bullet(0.4, "#0ff"));
     grenades = new ObjectPool(() => new Grenade());
 
     constructor(

@@ -5,13 +5,16 @@ export class Bullet extends GameObject implements IMovable {
 
     pos = new Vec();
     dir = new Vec();
-    spd = 0.4;
     box = new Box(this.pos, 6);
+
+    constructor(public spd: number, public color: string) {
+        super();
+    }
 
     render(ctx: CanvasRenderingContext2D) {
         const pos = this.box.center;
         ctx.save();
-        ctx.fillStyle = "#0ff";
+        ctx.fillStyle = this.color;
         ctx.beginPath();
         ctx.arc(pos.x, pos.y, this.box.width / 2, 0, Math.PI * 2);
         ctx.closePath();

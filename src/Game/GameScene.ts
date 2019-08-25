@@ -1,8 +1,8 @@
 import Hero from "./Hero";
-import { GameObject, GameEvent } from "./GameEngine";
+import { GameObject, GameEvent, ObjectPool } from "./GameEngine";
 import { Input } from "../common";
-import TileMap, { Tile } from "./TileMap";
-import Enemy, { EnemySpawner } from "./Enemy";
+import { TileMap, Tile } from "./TileMap";
+import { EnemyRunner, EnemySpawner, EnemyCamper, EnemyShooter, Enemy } from "./Enemy";
 import { Vec, Box } from "./Math";
 import { Bullet, Grenade } from "./Weapon";
 
@@ -13,42 +13,55 @@ export default class GameScene extends GameObject {
     cam = new Box(new Vec(0, -64), 192, 256);
     spd = 0.02;
     aim = new Vec();
-    spawners: EnemySpawner[] = this.map.getPosByTile(Tile.HOLE).map(pos => {
-        const spawner = new EnemySpawner(
-            () => new Enemy(this.hero),
-            (item: Enemy) => item.pos.set(pos),
-            new Box(pos, 16, 16),
-            100, 20, 180, 320
-        );
-        return spawner;
-    });
+    camps: ObjectPool = new ObjectPool(() => new EnemyCamper(this.hero));
+    shooters: ObjectPool = new ObjectPool(() => new EnemyShooter(this.hero, 500, 240));
+    spawners: EnemySpawner[] = [];
 
     constructor() {
         super();
         this.hero.pos.set(96, 128);
         this.map.createNav(this.hero.box.center);
         this.addChild(this.map);
-        for (const spawner of this.spawners) {
+        for (const pos of this.map.getPosByTile(Tile.CAMP)) {
+            this.camps.create((item: EnemyCamper) => item.pos.set(pos));
+        }
+        for (const pos of this.map.getPosByTile(Tile.SHOT)) {
+            this.shooters.create((item: EnemyShooter) => item.pos.set(pos));
+        }
+        for (const pos of this.map.getPosByTile(Tile.HOLE)) {
+            const spawner = new EnemySpawner(
+                () => new EnemyRunner(this.hero),
+                (item: EnemyRunner) => item.pos.set(pos),
+                new Box(pos, 16, 16),
+                100, 20, 180, 320
+            );
+            this.spawners.push(spawner);
             this.addChild(spawner);
         }
-        this.addChild(this.hero);
+        this.addChild(this.camps)
+            .addChild(this.shooters)
+            .addChild(this.hero);
         this.bind();
     }
 
     bind() {
         this.on("grenade", (event: GameEvent) => {
             const grenade = event.target as Grenade;
-            const center = grenade.box.center;
+            this.camps.each((enemy: EnemyCamper) => this.grenade(grenade, enemy));
+            this.shooters.each((enemy: EnemyShooter) => this.grenade(grenade, enemy));
             for (const spawner of this.spawners) {
-                spawner.each((enemy: Enemy) => {
-                    const dist = enemy.box.center.sub(center).length;
-                    if (grenade.rad >= dist) {
-                        this.emit(new GameEvent("kill", enemy, grenade));
-                        enemy.parent.removeChild(enemy);
-                    }
-                });
+                spawner.each((enemy: EnemyRunner) => this.grenade(grenade, enemy));
             }
         });
+    }
+
+    grenade(grenade: Grenade, enemy: Enemy) {
+        const center = grenade.box.center;
+        const dist = enemy.box.center.sub(center).length;
+        if (grenade.rad >= dist) {
+            this.emit(new GameEvent("kill", enemy, grenade));
+            enemy.parent.removeChild(enemy);
+        }
     }
 
     render(ctx: CanvasRenderingContext2D) {
@@ -106,6 +119,13 @@ export default class GameScene extends GameObject {
                 item.emit(new GameEvent("grenade", item));
                 item.parent.removeChild(item);
             }
+        });
+        this.shooters.each((enemy: EnemyShooter) => {
+            enemy.bullets.each((item: Bullet) => {
+                if (this.map.collideX(item.box) || this.map.collideY(item.box)) {
+                    item.parent.removeChild(item);
+                }
+            });
         });
     }
 

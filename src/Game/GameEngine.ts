@@ -30,9 +30,10 @@ export class GameObject {
     children: GameObject[] = [];
     listeners: {[event: string]: {(event:GameEvent): void}[]} = { all: [] };
 
-    addChild(child: GameObject) {
+    addChild(child: GameObject): GameObject {
         this.children.push(child);
         child.parent = this;
+        return this;
     }
 
     removeChild(child: GameObject) {

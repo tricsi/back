@@ -1,31 +1,19 @@
 import { Vec, Box } from "./Math";
 import Hero from "./Hero";
 import { Bullet } from "./Weapon";
-import { IMovable, GameObject, ObjectSpawner, GameEvent } from "./GameEngine";
+import { IMovable, GameObject, ObjectSpawner, GameEvent, ObjectPool } from "./GameEngine";
 
-export default class Enemy extends GameObject implements IMovable
-{
+export class Enemy extends GameObject {
 
     pos = new Vec();
-    dir = new Vec();
-    spd = 0.1;
     box = new Box(this.pos, 16, 16);
-    parent: ObjectSpawner;
 
     constructor(public hero: Hero) {
         super();
     }
 
-    render(ctx: CanvasRenderingContext2D) {
-        const box = this.box;
-        const pos = this.pos;
-        ctx.save();
-        ctx.fillStyle = "#c00";
-        ctx.fillRect(Math.round(pos.x), Math.round(pos.y), box.width, box.height);
-        ctx.restore();
-    }
-
     update(delta: number) {
+        super.update(delta);
         if (this.box.collide(this.hero.box)) {
             this.emit(new GameEvent("hit", this));
             this.parent.removeChild(this);
@@ -40,11 +28,99 @@ export default class Enemy extends GameObject implements IMovable
             }
         }
     }
+
+}
+
+export class EnemyCamper extends Enemy {
+
+    render(ctx: CanvasRenderingContext2D) {
+        const box = this.box;
+        const pos = box.center;
+        ctx.save();
+        ctx.fillStyle = "#0c0";
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, box.width / 2, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+    }
+
+}
+
+export class EnemyShooter extends Enemy {
+
+    fireTime = this.fireSpeed;
+    bullets = new ObjectPool(() => new Bullet(0.1, "#fff"));
+
+    constructor(
+        public hero: Hero,
+        public fireSpeed: number,
+        public far: number
+    ) {
+        super(hero);
+        this.addChild(this.bullets);
+    }
+
+    render(ctx: CanvasRenderingContext2D) {
+        const box = this.box;
+        const pos = box.center;
+        ctx.save();
+        ctx.fillStyle = "#c0c";
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, box.width / 2, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+        super.render(ctx);
+    }
+
+    update(delta: number) {
+        super.update(delta);
+        this.bullets.each((bullet: Bullet) => {
+            if (bullet.box.collide(this.hero.box)) {
+                this.emit(new GameEvent("hit", bullet));
+                bullet.parent.removeChild(bullet);
+            }
+        });
+        const center = this.box.center;
+        const diff = this.hero.box.center.sub(center);
+        if (diff.length > this.far) {
+            return;
+        }
+        this.fireTime -= delta;
+        if (this.fireTime <= 0) {
+            this.fireTime = this.fireSpeed;
+            this.bullets.create((bullet: Bullet) => {
+                const box = bullet.box;
+                bullet.dir.set(diff.normalize());
+                bullet.pos.set(center.sub(box.width / 2, box.height / 2));
+                this.emit(new GameEvent("fire", this, bullet));
+            });
+        }
+    }
+
+}
+
+export class EnemyRunner extends Enemy implements IMovable
+{
+
+    dir = new Vec();
+    spd = 0.1;
+    parent: ObjectSpawner;
+
+    render(ctx: CanvasRenderingContext2D) {
+        const box = this.box;
+        const pos = this.pos;
+        ctx.save();
+        ctx.fillStyle = "#c00";
+        ctx.fillRect(pos.x, pos.y, box.width, box.height);
+        ctx.restore();
+    }
 }
 
 export class EnemySpawner extends ObjectSpawner {
 
-    children: Enemy[];
+    children: EnemyRunner[];
     active = false;
 
     constructor(
@@ -59,9 +135,9 @@ export class EnemySpawner extends ObjectSpawner {
         super(factory, init, box, period, limit);
     }
 
-    create(init: (item: Enemy) => void = null): Enemy {
+    create(init: (item: EnemyRunner) => void = null): EnemyRunner {
         return this.active
-            ? super.create(init) as Enemy
+            ? super.create(init) as EnemyRunner
             : null;
     }
 
