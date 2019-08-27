@@ -1,18 +1,23 @@
 import { Vec, Box } from "./Math";
 import { GameObject, IMovable, GameEvent, ObjectPool, IKiller } from "./GameEngine";
+import { IConfig } from "../config";
 
 export class Weapon extends ObjectPool {
 
+    frq: number;
+    ammo: number;
+    magazine: number;
+    children: Bullet[];
     protected time = 0;
-    public children: Bullet[];
 
     constructor(
         protected factory: () => GameObject,
-        public spd: number,
-        public ammo: number,
-        public magazine: number = 0
+        {frq, amm, mag}: IConfig
     ) {
         super(factory);
+        this.frq = frq;
+        this.ammo = amm;
+        this.magazine = mag;
     }
 
     load(ammo: number) {
@@ -23,11 +28,11 @@ export class Weapon extends ObjectPool {
     }
 
     create(init: (item: GameObject) => void = null): GameObject {
-        if (this.ammo <= 0 || (this.spd && this.time)) {
+        if (this.ammo <= 0 || (this.frq && this.time)) {
             return null;
         }
         this.ammo--;
-        this.time = this.spd;
+        this.time = this.frq;
         return super.create(init);
     }
 
@@ -39,17 +44,23 @@ export class Weapon extends ObjectPool {
 
 export class Bullet extends GameObject implements IMovable, IKiller {
 
-    pos = new Vec();
-    dir = new Vec();
-    box = new Box(this.pos, this.size);
+    spd: number;
+    dmg: number;
+    size: number;
+    color: string;
+    pos: Vec;
+    dir: Vec;
+    box: Box;
 
-    constructor(
-        public spd: number,
-        public dmg: number,
-        public size: number,
-        public color: string
-    ) {
+    constructor({spd, dmg, size, color}: IConfig = {}) {
         super();
+        this.spd = spd;
+        this.dmg = dmg;
+        this.size = size;
+        this.color = color;
+        this.pos = new Vec();
+        this.dir = new Vec();
+        this.box = new Box(this.pos, this.size);
     }
 
     render(ctx: CanvasRenderingContext2D) {
@@ -71,15 +82,13 @@ export class Bullet extends GameObject implements IMovable, IKiller {
 
 export class Grenade extends Bullet {
 
-    aim = new Vec();
+    radius: number;
+    aim: Vec;
 
-    constructor(
-        public spd: number,
-        public dmg: number,
-        public size: number,
-        public radius: number
-    ) {
-        super(spd, dmg, size, "#0f0");
+    constructor({spd, dmg, size, color, radius}: IConfig = {}) {
+        super({spd, dmg, size, color});
+        this.radius = radius;
+        this.aim = new Vec();
     }
 
     update(delta: number) {

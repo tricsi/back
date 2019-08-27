@@ -7,16 +7,17 @@ import { Vec, Box } from "./Math";
 import { Bullet, Grenade } from "./Weapon";
 import Hud from "./Hud";
 import { Medkit, Item, AmmoBox, GrenadeBox } from "./Item";
+import config from "../config";
 
 export default class GameScene extends GameObject {
 
-    hero = new Hero(new Box(new Vec(0, 100), 16, 24), 0.2, 100);
-    map = new TileMap(12, 16, [1, 2, 3, 4, 0]);
+    hero = new Hero(config.hero);
+    map = new TileMap(12, 16, config.map.cave, config.map.sgmt);
     cam = new Box(new Vec(0, -64), 192, 256);
-    spd = 0.02;
+    spd = config.cam.spd;
     aim = new Vec();
-    camps: ObjectPool = new ObjectPool(() => new EnemyCamper(this.hero, 20, 5, 10));
-    shots: ObjectPool = new ObjectPool(() => new EnemyShooter(this.hero, 50, 0, 50, 240));
+    camps: ObjectPool = new ObjectPool(() => new EnemyCamper(this.hero, config.camp));
+    shots: ObjectPool = new ObjectPool(() => new EnemyShooter(this.hero, config.shot));
     holes: EnemySpawner[] = [];
 
     constructor() {
@@ -46,10 +47,10 @@ export default class GameScene extends GameObject {
         }
         for (const pos of this.map.getPosByTile(Tile.HOLE)) {
             const hole = new EnemySpawner(
-                () => new EnemyRunner(this.hero, 20, 10, 25),
+                () => new EnemyRunner(this.hero, config.shot),
                 (item: EnemyRunner) => item.pos.set(pos),
                 new Box(pos, 16, 16),
-                100, 20, 180, 320
+                config.hole
             );
             this.holes.push(hole);
             this.addChild(hole);
@@ -62,11 +63,11 @@ export default class GameScene extends GameObject {
             const target = event.target;
             if (target instanceof Enemy) {
                 target.hp -= event.payload;
-                if (target.hp < 0) {
+                if (target.hp <= 0) {
                     this.emit(new GameEvent("kill", target));
                     this.hero.score += target.score;
                     target.parent.removeChild(target);
-                    target.hp = target.maxHp;
+                    target.hp = target.max;
                 }
             }
             if (target instanceof Hero) {

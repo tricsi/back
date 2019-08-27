@@ -13,7 +13,7 @@ export interface IKiller {
 
 export interface IKillable {
     hp: number;
-    maxHp: number;
+    max: number;
     score: number;
 }
 
@@ -140,7 +140,7 @@ export class ObjectSpawner extends ObjectPool
         protected factory: () => GameObject,
         protected init: (item: GameObject) => void,
         public box: Box,
-        public period: number = 0,
+        public frq: number = 0,
         public limit: number = 0
     ) {
         super(factory);
@@ -154,12 +154,12 @@ export class ObjectSpawner extends ObjectPool
 
     update(delta: number) {
         super.update(delta);
-        if (this.period <= 0) {
+        if (this.frq <= 0) {
             return;
         }
         this.time += delta;
-        if (this.time > this.period) {
-            this.time -= this.period;
+        if (this.time > this.frq) {
+            this.time -= this.frq;
             this.create(this.init);
         }
     }

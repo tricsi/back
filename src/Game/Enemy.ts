@@ -2,20 +2,23 @@ import { Vec, Box } from "./Math";
 import Hero from "./Hero";
 import { Bullet, Weapon } from "./Weapon";
 import { IMovable, GameObject, ObjectSpawner, GameEvent, IKillable, IKiller } from "./GameEngine";
+import { IConfig } from "../config";
 
 export class Enemy extends GameObject implements IKillable, IKiller {
 
-    hp = this.maxHp;
+    hp: number;
+    max: number;
+    dmg: number;
+    score: number;
     pos = new Vec();
     box = new Box(this.pos, 16);
 
-    constructor(
-        public hero: Hero,
-        public maxHp: number,
-        public dmg: number,
-        public score: number
-    ) {
+    constructor(public hero: Hero, {hp, dmg, score}: IConfig = {}) {
         super();
+        this.hp = hp;
+        this.max = hp;
+        this.dmg = dmg;
+        this.score = score
     }
 
     update(delta: number) {
@@ -54,16 +57,13 @@ export class EnemyCamper extends Enemy {
 
 export class EnemyShooter extends Enemy {
 
-    gun = new Weapon(() => new Bullet(0.1, 10, 6, "#fff"), 500, 9999);
+    far: number;
+    gun: Weapon;
 
-    constructor(
-        public hero: Hero,
-        public maxHp: number,
-        public dmg: number,
-        public score: number,
-        public far: number
-    ) {
-        super(hero, maxHp, dmg, score);
+    constructor(public hero: Hero, {hp, dmg, score, far, gun}: IConfig = {}) {
+        super(hero, {hp, dmg, score});
+        this.far = far;
+        this.gun = new Weapon(() => new Bullet(gun.bul), gun);
         this.addChild(this.gun);
     }
 
@@ -124,17 +124,18 @@ export class EnemySpawner extends ObjectSpawner {
 
     children: EnemyRunner[];
     active = false;
+    near: number;
+    far: number;
 
     constructor(
         protected factory: () => GameObject,
         protected init: (item: GameObject) => void,
         public box: Box,
-        public period: number = 0,
-        public limit: number = 0,
-        public near: number = 0,
-        public far: number = 0
+        {frq, limit, near, far}: IConfig
     ) {
-        super(factory, init, box, period, limit);
+        super(factory, init, box, frq, limit);
+        this.near = near;
+        this.far = far;
     }
 
     create(init: (item: EnemyRunner) => void = null): EnemyRunner {

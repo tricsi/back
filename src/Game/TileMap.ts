@@ -11,16 +11,6 @@ export enum Tile {
     ITEM = 6,
 }
 
-class TileSegment {
-
-    constructor(
-        public map: number[][],
-        public poi: number[][] = []
-    ) {
-    }
-
-}
-
 export class TileMap extends GameObject {
 
     static readonly MAX_NAV = 30;
@@ -28,25 +18,21 @@ export class TileMap extends GameObject {
     height: number = 0;
     tiles: number[][] = [];
     nav: number[][] = [];
-    segments: TileSegment[] = [
-        new TileSegment([[5],[1,1,11],[2,4,8]]), // 0 = end
-        new TileSegment([[1,1,11],[11]], [[2,4,3],[3,0,11,1,11,2,11],[4,8,3],[6,11,11]]), // 1 = start
-        new TileSegment([[4,3,12],[6,3,9],[4,0,9]], [[2,10,2]]), // 2 = corridor
-        new TileSegment([[6],[4,0,4,8,12]]), // 3 = block
-        new TileSegment([[6],[3,0,2,4,8,10,12]]), // 4 = blocks
-    ];
 
     constructor(
         public width: number,
         public size: number,
-        cave: number[]
+        cave: number[],
+        segments: number[][][][]
     ) {
         super();
         for (const i of cave) {
             const top = this.height;
-            const segment = this.segments[i];
-            this.loadMap(segment.map);
-            this.loadPoi(segment.poi, top);
+            const segment = segments[i];
+            this.loadMap(segment[0]);
+            if (segment.length > 1) {
+                this.loadPoi(segment[1], top);
+            }
         }
     }
 

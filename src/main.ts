@@ -5,7 +5,7 @@ import GameScene from "./Game/GameScene";
 
 const texture = require("./assets/texture.png");
 const config = require("./assets/texture.json");
-const canvas = <HTMLCanvasElement>$("#game");
+const canvas = $("#game") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d");
 const scene = new GameScene();
 const keys: boolean[] = [];
@@ -41,15 +41,15 @@ function bind() {
         keys[e.keyCode] = false;
         scene.input(keys, false);
     })
-    on(document, 'mousedown', (e: MouseEvent) => {
+    on(canvas, 'mousedown', (e: MouseEvent) => {
         keys[e.button] = true;
         scene.input(keys, true);
     });
-    on(document, 'mouseup', (e: MouseEvent) => {
+    on(canvas, 'mouseup', (e: MouseEvent) => {
         keys[e.button] = false;
         scene.input(keys, false);
     });
-    on(document, 'mousemove', (e: MouseEvent) => {
+    on(canvas, 'mousemove', (e: MouseEvent) => {
         const body = document.body;
         const ratio = canvas.height / body.clientHeight;
         scene.pointer(e.clientX * ratio, e.clientY * ratio);
@@ -64,7 +64,7 @@ on(window, "load", () => {
     bind();
 });
 
-on(document, "click", async () => {
+on(canvas, "click", async () => {
     if (running) {
         return;
     }

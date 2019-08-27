@@ -40,8 +40,8 @@ export class Medkit extends Item {
     power() {
         const hero = this.hero;
         hero.hp += this.value;
-        if (hero.hp > hero.maxHp) {
-            hero.hp = hero.maxHp;
+        if (hero.hp > hero.max) {
+            hero.hp = hero.max;
         }
     }
 

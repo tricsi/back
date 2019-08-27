@@ -1,24 +1,32 @@
 import { Box, Vec } from "./Math";
 import { Bullet, Grenade, Weapon } from "./Weapon";
 import { IMovable, GameEvent, GameObject, IKillable } from "./GameEngine";
+import { IConfig } from "../config";
 
 export default class Hero extends GameObject implements IMovable, IKillable {
 
-    hp = this.maxHp;
-    pos = this.box.pos;
+    hp: number;
+    max: number;
+    spd: number;
+    score: number;
+    pos: Vec;
+    box: Box;
     dir = new Vec();
     aim = new Vec();
     fire = false;
-    gun = new Weapon(() => new Bullet(0.4, 25, 6, "#0ff"), 100, 9999);
-    grenades = new Weapon(() => new Grenade(0.2, 50, 10, 48), 0, 5, 10);
-    score = 0;
+    gun: Weapon;
+    grenades: Weapon;
 
-    constructor(
-        public box: Box,
-        public spd: number,
-        public maxHp: number
-    ) {
+    constructor({x, y, hp, spd, score, gun, gnd}: IConfig = {}) {
         super();
+        this.hp = hp;
+        this.max = hp;
+        this.spd = spd;
+        this.score = score;
+        this.pos = new Vec(x, y);
+        this.box = new Box(this.pos, 16, 24);
+        this.gun = new Weapon(() => new Bullet(gun.bul), gun);
+        this.grenades = new Weapon(() => new Grenade(gnd.bul), gnd)
         this.addChild(this.grenades);
         this.addChild(this.gun);
     }
