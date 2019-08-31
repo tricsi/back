@@ -3,6 +3,7 @@ import Hero from "./Hero";
 import { Bullet, Weapon } from "./Weapon";
 import { IMovable, GameObject, ObjectSpawner, GameEvent, IKillable, IKiller } from "./GameEngine";
 import { IConfig } from "../config";
+import Sprite from "./Sprite";
 
 export class Enemy extends GameObject implements IKillable, IKiller {
 
@@ -111,12 +112,7 @@ export class EnemyRunner extends Enemy implements IMovable
     parent: ObjectSpawner;
 
     render(ctx: CanvasRenderingContext2D) {
-        const box = this.box;
-        const pos = this.pos;
-        ctx.save();
-        ctx.fillStyle = "#c00";
-        ctx.fillRect(pos.x, pos.y, box.width, box.height);
-        ctx.restore();
+        Sprite.draw(ctx, "runner", this.box);
     }
 }
 

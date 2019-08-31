@@ -1,39 +1,5 @@
 {
-  "frames": {
-    "download": {
-      "frame": {
-        "x": 0,
-        "y": 0,
-        "w": 112,
-        "h": 195
-      },
-      "rotated": false,
-      "trimmed": true,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 112,
-        "h": 195
-      },
-      "sourceSize": {
-        "w": 112,
-        "h": 196
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5
-      }
-    }
-  },
-  "meta": {
-    "app": "http://free-tex-packer.com",
-    "version": "0.6.0",
-    "image": "texture.png",
-    "format": "RGBA8888",
-    "size": {
-      "w": 112,
-      "h": 195
-    },
-    "scale": 1
-  }
+"cave": [0,0],
+"hero": [0,32],
+"runner": [48,32]
 }

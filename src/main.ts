@@ -2,9 +2,8 @@ import "./style.scss";
 import Sfx from "./sfx";
 import { on, $ } from "./common";
 import GameScene from "./Game/GameScene";
+import Sprite from "./Game/Sprite";
 
-const texture = require("./assets/texture.png");
-const config = require("./assets/texture.json");
 const canvas = $("#game") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d");
 const scene = new GameScene();
@@ -13,7 +12,8 @@ let running = false;
 let time: number;
 
 function render() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#999";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     scene.render(ctx);
 }
 
@@ -57,7 +57,8 @@ function bind() {
     on(window, "resize", resize);
 }
 
-on(window, "load", () => {
+on(window, "load", async () => {
+    await Sprite.load(require("./assets/texture.png"), require("./assets/texture.json"));
     on(document, 'contextmenu', (e: MouseEvent) => e.preventDefault());
     resize();
     render();

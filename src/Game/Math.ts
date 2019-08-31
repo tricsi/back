@@ -72,9 +72,9 @@ export class Vec {
     }
 
     normalize(): Vec {
-        const len = this.length;
-        if (len > 0) {
-            this.scale(1 / len);
+        const length = this.length;
+        if (length > 0) {
+            this.scale(1 / length);
         }
         return this;
     }
@@ -103,29 +103,29 @@ export class Box {
         public height: number = width
     ) {}
 
-    collide(box: Box): boolean {
-        return this.pos.x < box.pos.x + box.width &&
-            this.pos.x + this.width > box.pos.x &&
-            this.pos.y < box.pos.y + box.height &&
-            this.height + this.pos.y > box.pos.y;
+    collide({ pos, width, height }: Box): boolean {
+        return this.pos.x < pos.x + width &&
+            this.pos.x + this.width > pos.x &&
+            this.pos.y < pos.y + height &&
+            this.height + this.pos.y > pos.y;
     }
 
-    contains(box: Box): boolean {
-        return this.pos.x <= box.pos.x &&
-            this.pos.x + this.width >= box.pos.x + box.width &&
-            this.pos.y <= box.pos.y &&
-            this.pos.y + this.height >= box.pos.y + box.height;
+    contains({ pos, width, height }: Box): boolean {
+        return this.pos.x <= pos.x &&
+            this.pos.x + this.width >= pos.x + width &&
+            this.pos.y <= pos.y &&
+            this.pos.y + this.height >= pos.y + height;
     }
 
-    intersect(box: Box): Box {
+    intersect({ pos, width, height }: Box): Box {
         let Ax = Math.round(this.pos.x),
             Ay = Math.round(this.pos.y),
             AX = Ax + this.width,
             AY = Ay + this.height,
-            Bx = Math.round(box.pos.x),
-            By = Math.round(box.pos.y),
-            BX = Bx + box.width,
-            BY = By + box.height,
+            Bx = Math.round(pos.x),
+            By = Math.round(pos.y),
+            BX = Bx + width,
+            BY = By + height,
             Cx = Ax < Bx ? Bx : Ax,
             Cy = Ay < By ? By : Ay,
             CX = AX < BX ? AX : BX,

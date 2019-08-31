@@ -98,7 +98,7 @@ export default class GameScene extends GameObject {
 
     render(ctx: CanvasRenderingContext2D) {
         ctx.save();
-        ctx.translate(this.cam.pos.x, -this.cam.pos.y);
+        ctx.translate(Math.round(this.cam.pos.x), -Math.round(this.cam.pos.y));
         super.render(ctx);
         ctx.restore();
     }

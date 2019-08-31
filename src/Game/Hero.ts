@@ -2,6 +2,7 @@ import { Box, Vec } from "./Math";
 import { Bullet, Grenade, Weapon } from "./Weapon";
 import { IMovable, GameEvent, GameObject, IKillable } from "./GameEngine";
 import { IConfig } from "../config";
+import Sprite from "./Sprite";
 
 export default class Hero extends GameObject implements IMovable, IKillable {
 
@@ -33,12 +34,7 @@ export default class Hero extends GameObject implements IMovable, IKillable {
 
     render(ctx: CanvasRenderingContext2D) {
         super.render(ctx);
-        const box = this.box;
-        const pos = this.pos;
-        ctx.save();
-        ctx.fillStyle = "#00c";
-        ctx.fillRect(pos.x, pos.y, box.width, box.height);
-        ctx.restore();
+        Sprite.draw(ctx, "hero", this.box);
     }
 
     update(delta: number) {

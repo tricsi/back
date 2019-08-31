@@ -1,5 +1,6 @@
 import { IMovable, GameObject } from "./GameEngine";
 import { Box, Vec } from "./Math";
+import Sprite from "./Sprite";
 
 export enum Tile {
     WALL = 0,
@@ -18,6 +19,7 @@ export class TileMap extends GameObject {
     height: number = 0;
     tiles: number[][] = [];
     nav: number[][] = [];
+    frame: number[][] = [];
 
     constructor(
         public width: number,
@@ -33,6 +35,7 @@ export class TileMap extends GameObject {
             if (segment.length > 1) {
                 this.loadPoi(segment[1], top);
             }
+            this.loadFrames();
         }
     }
 
@@ -62,20 +65,48 @@ export class TileMap extends GameObject {
         }
     }
 
-    render(ctx: CanvasRenderingContext2D) {
-        const size = this.size;
-        ctx.save();
+    loadFrames() {
         for (let y = 0; y < this.height; y++) {
+            this.frame[y] = [];
             for (let x = 0; x < this.width; x++) {
-                if (this.tiles[y][x] !== Tile.WALL) {
-                    ctx.fillStyle = "#666";
-                    ctx.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
-                    // ctx.fillStyle = "#eee";
-                    // ctx.fillText(this.nav[y][x].toString(), x * size + 2, y * size + 10)
+                let frame = 0;
+                if (this.getTile(x, y) === Tile.WALL) {
+                    frame += 1;
+                    if (this.getTile(x, y - 1) === Tile.WALL) {
+                        frame += 1;
+                    }
+                    if (this.getTile(x - 1, y) === Tile.WALL) {
+                        frame += 2;
+                    }
+                    if (this.getTile(x + 1, y) === Tile.WALL) {
+                        frame += 4;
+                    }
+                    if (this.getTile(x, y + 1) === Tile.WALL) {
+                        frame += 8;
+                    }
                 }
+                this.frame[y][x] = frame;
             }
         }
-        ctx.restore();
+    }
+
+    render(ctx: CanvasRenderingContext2D) {
+        const pos = new Vec();
+        const box = new Box(pos, this.size, this.size * 2);
+        for (let y = -1; y < this.height; y++) {
+            pos.set(-1, y).scale(this.size);
+            Sprite.draw(ctx, "cave", box, 15);
+            for (let x = 0; x < this.width; x++) {
+                pos.x += this.size;
+                if (y < 0) {
+                    Sprite.draw(ctx, "cave", box, 7);
+                } else if (this.frame[y][x]) {
+                    Sprite.draw(ctx, "cave", box, this.frame[y][x] - 1);
+                }
+            }
+            pos.x += this.size;
+            Sprite.draw(ctx, "cave", box, 15);
+        }
         super.render(ctx);
     }
 
@@ -103,13 +134,12 @@ export class TileMap extends GameObject {
         return result;
     }
 
-    collideX(box: Box, correct: boolean = false): boolean {
-        let pos = box.pos,
-            size = this.size,
+    collideX({ pos, width, height }: Box, correct: boolean = false): boolean {
+        let size = this.size,
             top = Math.floor(pos.y / size),
             left = Math.floor(pos.x / size),
-            right = Math.floor((pos.x + box.width) / size);
-        for (let i = top * size; i < pos.y + box.height; i += size) {
+            right = Math.floor((pos.x + width) / size);
+        for (let i = top * size; i < pos.y + height; i += size) {
             let y = Math.floor(i / size);
             if (!this.getTile(left, y)) {
                 if (correct) {
@@ -119,7 +149,7 @@ export class TileMap extends GameObject {
             }
             if (!this.getTile(right, y)) {
                 if (correct) {
-                    pos.x -= pos.x + box.width - right * size;
+                    pos.x -= pos.x + width - right * size;
                 }
                 return true;
             }
@@ -127,13 +157,12 @@ export class TileMap extends GameObject {
         return false;
     }
 
-    collideY(box: Box, correct: boolean = false): boolean {
-        let pos = box.pos,
-            size = this.size,
+    collideY({ pos, width, height }: Box, correct: boolean = false): boolean {
+        let size = this.size,
             top = Math.floor(pos.y / size),
             left = Math.floor(pos.x / size),
-            bottom = Math.floor((pos.y + box.height) / size);
-        for (let i = left * size; i < pos.x + box.width; i += size) {
+            bottom = Math.floor((pos.y + height) / size);
+        for (let i = left * size; i < pos.x + width; i += size) {
             let x = Math.floor(i / size);
             if (!this.getTile(x, top)) {
                 if (correct) {
@@ -143,7 +172,7 @@ export class TileMap extends GameObject {
             }
             if (!this.getTile(x, bottom)) {
                 if (correct) {
-                    pos.y -= pos.y + box.height - bottom * size;
+                    pos.y -= pos.y + height - bottom * size;
                 }
                 return true;
             }
