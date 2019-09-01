@@ -1,6 +1,7 @@
 import { Vec, Box } from "./Math";
 import { GameObject, IMovable, GameEvent, ObjectPool, IKiller } from "./GameEngine";
 import { IConfig } from "../config";
+import Sprite from "./Sprite";
 
 export class Weapon extends ObjectPool {
 
@@ -64,14 +65,7 @@ export class Bullet extends GameObject implements IMovable, IKiller {
     }
 
     render(ctx: CanvasRenderingContext2D) {
-        const pos = this.box.center;
-        ctx.save();
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(pos.x, pos.y, this.size / 2, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
+        Sprite.draw(ctx, "plasma", this.box);
     }
 
     update(delta: number) {
@@ -89,6 +83,10 @@ export class Grenade extends Bullet {
         super({spd, dmg, size, color});
         this.radius = radius;
         this.aim = new Vec();
+    }
+
+    render(ctx: CanvasRenderingContext2D) {
+        Sprite.draw(ctx, "grenade", this.box);
     }
 
     update(delta: number) {
