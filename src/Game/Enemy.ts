@@ -43,15 +43,7 @@ export class Enemy extends GameObject implements IKillable, IKiller {
 export class EnemyCamper extends Enemy {
 
     render(ctx: CanvasRenderingContext2D) {
-        const box = this.box;
-        const pos = box.center;
-        ctx.save();
-        ctx.fillStyle = "#0c0";
-        ctx.beginPath();
-        ctx.arc(pos.x, pos.y, box.width / 2, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
+        Sprite.draw(ctx, "camp", this.box);
     }
 
 }
@@ -69,15 +61,7 @@ export class EnemyShooter extends Enemy {
     }
 
     render(ctx: CanvasRenderingContext2D) {
-        const box = this.box;
-        const pos = box.center;
-        ctx.save();
-        ctx.fillStyle = "#c0c";
-        ctx.beginPath();
-        ctx.arc(pos.x, pos.y, box.width / 2, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
+        Sprite.draw(ctx, "shot", this.box);
         super.render(ctx);
     }
 
@@ -108,11 +92,23 @@ export class EnemyRunner extends Enemy implements IMovable
 {
 
     dir = new Vec();
-    spd = 0.1;
+    spd: number;
+    time = 0;
     parent: ObjectSpawner;
 
+    constructor(public hero: Hero, {hp, dmg, score, far, gun, spd}: IConfig = {}) {
+        super(hero, {hp, dmg, score, far, gun});
+        this.spd = spd;
+    }
+
     render(ctx: CanvasRenderingContext2D) {
-        Sprite.draw(ctx, "runner", this.box);
+        let frame = Math.floor(this.time % 400 / 100);
+        Sprite.draw(ctx, "runner", this.box, frame > 1 ? 3 - frame : frame, frame > 1);
+    }
+
+    update(delta: number) {
+        super.update(delta);
+        this.time += delta;
     }
 }
 
@@ -155,14 +151,7 @@ export class EnemySpawner extends ObjectSpawner {
     }
 
     render(ctx: CanvasRenderingContext2D): void {
-        const pos = this.box.center;
-        ctx.save();
-        ctx.fillStyle = "#000";
-        ctx.beginPath();
-        ctx.arc(Math.round(pos.x), Math.round(pos.y), this.box.width / 2, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
+        Sprite.draw(ctx, "hole", this.box);
         super.render(ctx);
     }
 

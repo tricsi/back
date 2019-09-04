@@ -52,6 +52,7 @@ export class Bullet extends GameObject implements IMovable, IKiller {
     pos: Vec;
     dir: Vec;
     box: Box;
+    time = 0;
 
     constructor({spd, dmg, size, color}: IConfig = {}) {
         super();
@@ -65,10 +66,12 @@ export class Bullet extends GameObject implements IMovable, IKiller {
     }
 
     render(ctx: CanvasRenderingContext2D) {
-        Sprite.draw(ctx, "plasma", this.box);
+        let frame = Math.floor(this.time % 200 / 50);
+        Sprite.draw(ctx, "plasma", this.box, 0, frame % 2 > 0, frame > 1);
     }
 
     update(delta: number) {
+        this.time += delta;
         this.pos.add(this.dir.clone().scale(this.spd * delta));
     }
 

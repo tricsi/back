@@ -23,8 +23,4 @@ export interface IConfig {
 }
 
 let config = require("./config.json");
-if (localStorage.getItem("config")) {
-    config = JSON.parse(localStorage.getItem("config"));
-}
-
 export default config;

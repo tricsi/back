@@ -47,7 +47,7 @@ export default class GameScene extends GameObject {
         }
         for (const pos of this.map.getPosByTile(Tile.HOLE)) {
             const hole = new EnemySpawner(
-                () => new EnemyRunner(this.hero, config.shot),
+                () => new EnemyRunner(this.hero, config.runr),
                 (item: EnemyRunner) => item.pos.set(pos),
                 new Box(pos, 16, 16),
                 config.hole
@@ -104,23 +104,17 @@ export default class GameScene extends GameObject {
     }
 
     update(delta: number) {
-        const map = this.map;
-        const cam = this.cam;
-        let speed = this.spd * delta;
-        const bottom = map.height * map.size - cam.height;
-        cam.pos.y += speed;
-        if (cam.pos.y > bottom) {
-            cam.pos.y = bottom;
-            speed = 0;
-        }
         super.update(delta);
-        this.updateHero(delta, speed);
+        this.updateHero(delta);
         this.updateProjectile(delta);
         this.updateMap();
         this.updateSpawners(delta);
+        const cam = this.cam;
+        const pos = this.hero.box.center;
+        this.cam.pos.y = pos.y - cam.height * .8;
     }
 
-    updateHero(delta: number, speed: number) {
+    updateHero(delta: number) {
         const hero = this.hero;
         if (hero.dir.x) {
             hero.pos.x += hero.dir.x * hero.spd * delta;
@@ -129,7 +123,6 @@ export default class GameScene extends GameObject {
         if (hero.dir.y) {
             hero.pos.y += hero.dir.y * hero.spd * delta;
         }
-        hero.pos.y += speed;
         this.map.collideY(hero.box, true);
 
         const cam = this.cam;
