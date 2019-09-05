@@ -92,12 +92,10 @@ export class TileMap extends GameObject {
 
     render(ctx: CanvasRenderingContext2D) {
         const pos = new Vec();
-        const box = new Box(pos, this.size, this.size * 2);
-        for (let y = -1; y < this.height; y++) {
-            pos.set(-1, y).scale(this.size);
-            Sprite.draw(ctx, "cave", box, 15);
+        const box = new Box(pos, this.size, this.size * 1.5);
+        for (let y = 0; y < this.height; y++) {
             for (let x = 0; x < this.width; x++) {
-                pos.x += this.size;
+                pos.set(x, y).scale(this.size);
                 if (y < 0) {
                     Sprite.draw(ctx, "cave", box, 7);
                 } else if (this.frame[y][x]) {
@@ -105,7 +103,6 @@ export class TileMap extends GameObject {
                 }
             }
             pos.x += this.size;
-            Sprite.draw(ctx, "cave", box, 15);
         }
         super.render(ctx);
     }
