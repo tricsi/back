@@ -7,10 +7,11 @@ export default class Explosion extends GameObject {
     pos: Vec = new Vec();
     box: Box = new Box(this.pos, 16);
     time: number = 0;
+    flip: boolean = false;
     frame: number = 0;
 
     render(ctx: CanvasRenderingContext2D) {
-        Sprite.draw(ctx, "splash", this.box, this.frame);
+        Sprite.draw(ctx, "splash", this.box, this.frame, this.flip);
     }
 
     update(delta: number) {

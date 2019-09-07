@@ -68,14 +68,18 @@ export class EnemyShooter extends Enemy {
 
     update(delta: number) {
         super.update(delta);
+        const hero = this.hero;
+        if (!hero.alive) {
+            return;
+        }
         this.gun.each((bullet: Bullet) => {
-            if (bullet.box.collide(this.hero.box)) {
-                this.emit(new GameEvent("hit", this.hero, bullet.dmg));
+            if (bullet.box.collide(hero.box)) {
+                this.emit(new GameEvent("hit", hero, bullet.dmg));
                 bullet.parent.removeChild(bullet);
             }
         });
         const center = this.box.center;
-        const diff = this.hero.box.center.sub(center);
+        const diff = hero.box.center.sub(center);
         if (diff.length > this.far) {
             return;
         }

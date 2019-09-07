@@ -97,6 +97,10 @@ export class Box {
         return this._center;
     }
 
+    get bottom(): number {
+        return this.pos.y + this.height;
+    }
+
     constructor(
         public pos: Vec,
         public width: number,

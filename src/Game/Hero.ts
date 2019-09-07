@@ -17,13 +17,19 @@ export default class Hero extends GameObject implements IMovable, IKillable {
     fire = false;
     gun: Weapon;
     grenades: Weapon;
+    lives: number;
     time: number = 0;
 
-    constructor({x, y, hp, spd, score, gun, gnd}: IConfig = {}) {
+    get alive(): boolean {
+        return this.lives > 0;
+    }
+
+    constructor({x, y, hp, spd, score, lives, gun, gnd}: IConfig = {}) {
         super();
         this.hp = hp;
         this.max = hp;
         this.spd = spd;
+        this.lives = lives;
         this.score = score;
         this.pos = new Vec(x, y);
         this.box = new Box(this.pos, 16, 24);
@@ -35,6 +41,9 @@ export default class Hero extends GameObject implements IMovable, IKillable {
 
     render(ctx: CanvasRenderingContext2D) {
         super.render(ctx);
+        if (!this.alive) {
+            return;
+        }
         const look =  this.aim.clone().sub(this.box.center);
         let frame = look.y >= 0 ? 0 : 3,
             anim = this.time % 200,
@@ -51,7 +60,7 @@ export default class Hero extends GameObject implements IMovable, IKillable {
         if (this.dir.length) {
             this.time += delta;
         }
-        if (!this.fire) {
+        if (!this.alive || !this.fire) {
             return;
         }
         this.gun.create((bullet: Bullet) => {

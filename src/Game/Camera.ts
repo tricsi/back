@@ -1,14 +1,20 @@
 import { Vec, Box } from "./Math";
 import { IConfig } from "../config";
 import { GameObject } from "./GameEngine";
+import Hero from "./Hero";
 
 export default class Camera extends GameObject {
 
     public pos: Vec;
     public box: Box;
     public spd: number;
+    public move: boolean = true;
 
-    constructor({x, y, width, height, spd}: IConfig, public bottom: number) {
+    constructor(
+        public hero: Hero,
+        {x, y, width, height, spd}: IConfig,
+        public bottom: number
+    ) {
         super();
         this.pos = new Vec(x, y);
         this.box = new Box(this.pos, width, height);
@@ -16,9 +22,13 @@ export default class Camera extends GameObject {
     }
 
     update(delta: number) {
+        if (!this.move) {
+            return;
+        }
         this.pos.y += this.spd * delta;
         if (this.pos.y + this.box.height > this.bottom) {
             this.pos.y = this.bottom - this.box.height;
+            this.move = false;
         }
     }
 

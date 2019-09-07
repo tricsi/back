@@ -14,6 +14,7 @@ export interface IConfig {
     height?: number,
     radius?: number,
     limit?: number,
+    lives?: number,
     near?: number,
     far?: number,
     cave?: number[],

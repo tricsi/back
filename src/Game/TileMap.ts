@@ -100,10 +100,12 @@ export class TileMap extends GameObject {
             : Tile.WALL;
     }
 
-    getPosByTile(tile: number): Vec[] {
-        let i = 0;
+    getPosByTile(tile: number, row: number = -1): Vec[] {
+        const start = row > 0 ? row : 0;
+        const end = row >= 0 ? row + 1 : this.height;
         const result: Vec[] = [];
-        for (let y = 0; y < this.height; y++) {
+        let i = start * this.width;
+        for (let y = start; y < end; y++) {
             for (let x = 0; x < this.width; x++) {
                 if (this.tiles[i++] === tile) {
                     result.push(new Vec(x * this.size, y * this.size));

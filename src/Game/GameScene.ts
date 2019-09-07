@@ -1,6 +1,6 @@
 import Hero from "./Hero";
 import { GameObject, GameEvent, ObjectPool } from "./GameEngine";
-import { Input } from "../common";
+import { Input, Rand } from "../common";
 import { TileMap, Tile } from "./TileMap";
 import { EnemyRunner, EnemySpawner, EnemyCamper, EnemyShooter, Enemy } from "./Enemy";
 import { Vec, Box } from "./Math";
@@ -15,11 +15,11 @@ export default class GameScene extends GameObject {
 
     hero = new Hero(config.hero);
     map = new TileMap("map");
-    cam = new Camera(config.cam, this.map.bottom);
+    cam = new Camera(this.hero, config.cam, this.map.bottom);
     aim = new Vec();
+    holes: EnemySpawner[] = [];
     camps: ObjectPool = new ObjectPool(() => new EnemyCamper(this.hero, config.camp));
     shots: ObjectPool = new ObjectPool(() => new EnemyShooter(this.hero, config.shot));
-    holes: EnemySpawner[] = [];
     explos: ObjectPool = new ObjectPool(() => new Explosion());
 
     constructor() {
@@ -63,43 +63,70 @@ export default class GameScene extends GameObject {
     }
 
     bind() {
-        this.on("hit", (event: GameEvent) => {
-            const target = event.target;
-            if (target instanceof Enemy) {
-                target.hp -= event.payload;
-                if (target.hp <= 0) {
-                    this.emit(new GameEvent("kill", target));
-                    this.hero.score += target.score;
-                    target.parent.removeChild(target);
-                    target.hp = target.max;
-                }
-            }
-            if (target instanceof Hero) {
-                target.hp -= event.payload;
-                if (target.hp < 0) {
-                    target.hp = 0;
-                }
-            }
-        });
+        this.on("hit", this.onHit);
+        this.on("kill", this.onKill);
+        this.on("death", this.onDeath);
+        this.on("explode", this.onExplode);
+    }
 
-        this.on("kill", (event: GameEvent) => {
-            this.explos.create((item: Explosion) => {
-                if (event.target instanceof Enemy) {
-                    item.pos.set(event.target.pos);
-                    item.time = 0;
-                    item.frame = 0;
-                }
-            });
-        });
-
-        this.on("explode", (event: GameEvent) => {
-            const grenade = event.target as Grenade;
-            this.camps.each((enemy: EnemyCamper) => this.explode(grenade, enemy));
-            this.shots.each((enemy: EnemyShooter) => this.explode(grenade, enemy));
-            for (const spawner of this.holes) {
-                spawner.each((enemy: EnemyRunner) => this.explode(grenade, enemy));
+    onHit = (event: GameEvent) => {
+        const target = event.target;
+        if (target instanceof Enemy) {
+            target.hp -= event.payload;
+            if (target.hp <= 0) {
+                this.emit(new GameEvent("kill", target));
+                target.parent.removeChild(target);
+                target.hp = target.max;
             }
-        });
+        }
+        if (target instanceof Hero) {
+            target.hp -= event.payload;
+            if (target.hp <= 0) {
+                this.emit(new GameEvent("death", target));
+            }
+        }
+    }
+
+    onKill = (event: GameEvent) => {
+        const target = event.target;
+        if (target instanceof Enemy) {
+            this.hero.score += target.score;
+            this.createExplo(target.pos);
+        }
+    }
+
+    onDeath = (event: GameEvent) => {
+        const hero = event.target as Hero;
+        const pos = hero.pos.clone();
+        this.createExplo(pos);
+        this.createExplo(pos.add(0, 8));
+        hero.lives--;
+        if (hero.alive) {
+            this.revive(hero);
+            return;
+        }
+        this.cam.move = false;
+    }
+
+    revive(hero: Hero) {
+        const map = this.map;
+        let row = Math.floor(this.cam.box.bottom / map.size);
+        if (row > map.height) {
+            row = map.height - 1;
+        }
+        const pos = map.getPosByTile(Tile.GROUND, row);
+        const i = pos.length > 1 ? Rand.get(pos.length - 1) : 0;
+        hero.hp = hero.max;
+        hero.pos.set(pos[i]);
+    }
+
+    onExplode = (event: GameEvent) => {
+        const grenade = event.target as Grenade;
+        this.camps.each((enemy: EnemyCamper) => this.explode(grenade, enemy));
+        this.shots.each((enemy: EnemyShooter) => this.explode(grenade, enemy));
+        for (const spawner of this.holes) {
+            spawner.each((enemy: EnemyRunner) => this.explode(grenade, enemy));
+        }
     }
 
     explode(grenade: Grenade, item: Enemy) {
@@ -108,6 +135,15 @@ export default class GameScene extends GameObject {
         if (grenade.radius >= dist) {
             this.emit(new GameEvent("hit", item, grenade.dmg));
         }
+    }
+
+    createExplo(pos: Vec) {
+        this.explos.create((item: Explosion) => {
+            item.pos.set(pos);
+            item.time = 0;
+            item.flip = Math.random() < 0.5;
+            item.frame = 0;
+        });
     }
 
     render(ctx: CanvasRenderingContext2D) {
@@ -119,8 +155,11 @@ export default class GameScene extends GameObject {
 
     update(delta: number) {
         super.update(delta);
-        this.updateHero(delta);
         this.updateProjectile(delta);
+        if (!this.hero.alive) {
+            return;
+        }
+        this.updateHero(delta);
         this.updateMap();
         this.updateSpawners(delta);
     }
@@ -138,7 +177,7 @@ export default class GameScene extends GameObject {
 
         const cam = this.cam;
         hero.aim.set(this.aim).add(-cam.pos.x, cam.pos.y);
-        const bottom = cam.pos.y + cam.box.height - hero.pos.y - hero.box.height
+        const bottom = cam.box.bottom - hero.box.bottom;
         if (bottom < 0) {
             hero.pos.y += bottom;
         }
