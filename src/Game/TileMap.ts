@@ -2,6 +2,8 @@ import { IMovable, GameObject } from "./GameEngine";
 import { Box, Vec } from "./Math";
 import Sprite from "./Sprite";
 
+declare const TileMaps: any;
+
 export enum Tile {
     WALL = 0,
     GROUND = 1,
@@ -16,58 +18,36 @@ export class TileMap extends GameObject {
 
     static readonly MAX_NAV = 30;
 
-    height: number = 0;
-    tiles: number[][] = [];
-    nav: number[][] = [];
-    frame: number[][] = [];
+    width: number;
+    height: number;
+    size: number = 16;
+    tiles: number[];
+    nav: number[];
+    frame: number[];
+
+    get length(): number {
+        return this.width * this.height;
+    }
 
     constructor(
-        public width: number,
-        public size: number,
-        cave: number[],
-        segments: number[][][][]
+        public name: string,
     ) {
         super();
-        for (const i of cave) {
-            const top = this.height;
-            const segment = segments[i];
-            this.loadMap(segment[0]);
-            if (segment.length > 1) {
-                this.loadPoi(segment[1], top);
-            }
-            this.loadFrames();
-        }
-    }
-
-    loadMap(data: number[][]) {
-        for (const line of data) {
-            for (let i = 0; i < line[0]; i++) {
-                const row = new Array(this.width);
-                if (line.length === 1) {
-                    row.fill(Tile.GROUND);
-                } else {
-                    row.fill(Tile.WALL);
-                    for (let j = 1; j < line.length; j += 2) {
-                        row.fill(Tile.GROUND, line[j], line[j + 1]);
-                    }
-                }
-                this.tiles[this.height] = row;
-                this.nav[this.height++] = new Array(this.width).fill(TileMap.MAX_NAV);
-            }
-        }
-    }
-
-    loadPoi(data: number[][], top: number) {
-        for (const line of data) {
-            for (let j = 1; j < line.length; j += 2) {
-                this.setTile(line[j], line[j + 1] + top, line[0]);
-            }
-        }
+        const map = TileMaps[name];
+        this.width = map.width + 2;
+        this.height = map.height + 1;
+        this.tiles = new Array(this.width * this.height).fill(Tile.WALL);
+        map.layers[0].data.forEach((tile: number, i: number) => {
+            let x = i % map.width + 1;
+            let y = Math.floor(i / map.width) + 1;
+            this.tiles[y * this.width + x] = tile > 1 ? tile : 1 - tile;
+        });
+        this.loadFrames();
     }
 
     loadFrames() {
+        this.frame = [];
         for (let y = 0; y < this.height; y++) {
-            this.frame[y] = [];
             for (let x = 0; x < this.width; x++) {
                 let frame = 0;
                 if (this.getTile(x, y) === Tile.WALL) {
@@ -85,7 +65,7 @@ export class TileMap extends GameObject {
                         frame += 8;
                     }
                 }
-                this.frame[y][x] = frame;
+                this.frame.push(frame);
             }
         }
     }
@@ -93,14 +73,11 @@ export class TileMap extends GameObject {
     render(ctx: CanvasRenderingContext2D) {
         const pos = new Vec();
         const box = new Box(pos, this.size, this.size * 1.5);
+        let i = 0;
         for (let y = 0; y < this.height; y++) {
             for (let x = 0; x < this.width; x++) {
                 pos.set(x, y).scale(this.size);
-                if (y < 0) {
-                    Sprite.draw(ctx, "cave", box, 7);
-                } else if (this.frame[y][x]) {
-                    Sprite.draw(ctx, "cave", box, this.frame[y][x] - 1);
-                }
+                Sprite.draw(ctx, "cave", box, this.frame[i++] - 1);
             }
             pos.x += this.size;
         }
@@ -109,21 +86,22 @@ export class TileMap extends GameObject {
 
     setTile(x: number, y: number, tile: number) {
         if (y >= 0 && y < this.height && x >= 0 && x < this.width) {
-            this.tiles[y][x] = tile;
+            this.tiles[y * this.width + x] = tile;
         }
     }
 
     getTile(x: number, y: number): number {
         return y >= 0 && y < this.height && x >= 0 && x < this.width
-            ? this.tiles[y][x]
+            ? this.tiles[y * this.width + x]
             : Tile.WALL;
     }
 
     getPosByTile(tile: number): Vec[] {
+        let i = 0;
         const result: Vec[] = [];
         for (let y = 0; y < this.height; y++) {
-            for (let x = 0; x < this.height; x++) {
-                if (this.tiles[y][x] === tile) {
+            for (let x = 0; x < this.width; x++) {
+                if (this.tiles[i++] === tile) {
                     result.push(new Vec(x * this.size, y * this.size));
                 }
             }
@@ -179,13 +157,13 @@ export class TileMap extends GameObject {
 
     createNav(pos: Vec) {
         const target = pos.tile(this.size);
-        this.nav.forEach(row => row.fill(TileMap.MAX_NAV));
+        this.nav = new Array(this.tiles.length).fill(TileMap.MAX_NAV);
         this.setNav(target.x, target.y);
     }
 
     lockNav(pos: Vec) {
         const tile = pos.tile(this.size);
-        this.nav[tile.y][tile.x] = TileMap.MAX_NAV;
+        this.nav[tile.y * this.width + tile.x] = TileMap.MAX_NAV;
     }
 
     setDirection(item: IMovable) {
@@ -227,7 +205,7 @@ export class TileMap extends GameObject {
 
     private getNav(x: number, y: number): number {
         return y >= 0 && y < this.height && x >= 0 && x < this.width
-            ? this.nav[y][x]
+            ? this.nav[y * this.width + x]
             : TileMap.MAX_NAV;
     }
 
@@ -235,11 +213,11 @@ export class TileMap extends GameObject {
         if (
             weight >= TileMap.MAX_NAV ||
             !this.getTile(x, y) ||
-            weight >= this.nav[y][x]
+            weight >= this.getNav(x, y)
         ) {
             return;
         }
-        this.nav[y][x] = weight++;
+        this.nav[y * this.width + x] = weight++;
         this.setNav(x + 1, y, weight);
         this.setNav(x, y + 1, weight);
         this.setNav(x - 1, y, weight);

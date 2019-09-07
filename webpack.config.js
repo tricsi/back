@@ -3,6 +3,7 @@
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const HtmlWebpackInlineSourcePlugin = require("html-webpack-inline-source-plugin");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 const TerserWebpackPlugin = require("terser-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
@@ -115,6 +116,9 @@ module.exports = {
         new CleanWebpackPlugin({
             dry: isDev
         }),
+        new CopyWebpackPlugin([
+            { from: "src/map.js" }
+        ]),
         new MiniCssExtractPlugin(),
         new HtmlWebpackPlugin({
             template: "src/index.html",

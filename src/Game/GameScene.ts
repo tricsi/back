@@ -12,7 +12,7 @@ import config from "../config";
 export default class GameScene extends GameObject {
 
     hero = new Hero(config.hero);
-    map = new TileMap(12, 16, config.map.cave, config.map.sgmt);
+    map = new TileMap("map");
     cam = new Box(new Vec(0, -64), 192, 256);
     spd = config.cam.spd;
     aim = new Vec();

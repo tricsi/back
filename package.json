@@ -12,6 +12,7 @@
   "devDependencies": {
     "advzip-bin": "^1.1.0",
     "clean-webpack-plugin": "^2.0.1",
+    "copy-webpack-plugin": "^5.0.4",
     "css-loader": "^3.1.0",
     "glsl-minify-loader": "^1.0.0",
     "html-webpack-inline-source-plugin": "0.0.10",
