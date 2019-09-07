@@ -8,6 +8,7 @@ import { Bullet, Grenade } from "./Weapon";
 import Hud from "./Hud";
 import { Medkit, Item, AmmoBox, GrenadeBox } from "./Item";
 import config from "../config";
+import Explosion from "./Explosion";
 
 export default class GameScene extends GameObject {
 
@@ -19,6 +20,7 @@ export default class GameScene extends GameObject {
     camps: ObjectPool = new ObjectPool(() => new EnemyCamper(this.hero, config.camp));
     shots: ObjectPool = new ObjectPool(() => new EnemyShooter(this.hero, config.shot));
     holes: EnemySpawner[] = [];
+    explos: ObjectPool = new ObjectPool(() => new Explosion());
 
     constructor() {
         super();
@@ -28,6 +30,7 @@ export default class GameScene extends GameObject {
             .addChild(this.camps)
             .addChild(this.shots)
             .addChild(this.hero)
+            .addChild(this.explos)
             .addChild(new Hud(this.hero));
         for (const pos of this.map.getPosByTile(Tile.CAMP)) {
             this.camps.create((item: EnemyCamper) => item.pos.set(pos));
@@ -76,6 +79,16 @@ export default class GameScene extends GameObject {
                     target.hp = 0;
                 }
             }
+        });
+
+        this.on("kill", (event: GameEvent) => {
+            this.explos.create((item: Explosion) => {
+                if (event.target instanceof Enemy) {
+                    item.pos.set(event.target.pos);
+                    item.time = 0;
+                    item.frame = 0;
+                }
+            });
         });
 
         this.on("explode", (event: GameEvent) => {

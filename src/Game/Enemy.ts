@@ -26,6 +26,7 @@ export class Enemy extends GameObject implements IKillable, IKiller {
         super.update(delta);
         if (this.box.collide(this.hero.box)) {
             this.emit(new GameEvent("hit", this.hero, this.dmg));
+            this.emit(new GameEvent("kill", this));
             this.parent.removeChild(this);
             return;
         }
