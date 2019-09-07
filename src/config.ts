@@ -10,6 +10,8 @@ export interface IConfig {
     score?: number,
     size?: number,
     color?: string,
+    width?: number,
+    height?: number,
     radius?: number,
     limit?: number,
     near?: number,

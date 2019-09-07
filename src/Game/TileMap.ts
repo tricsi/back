@@ -29,6 +29,10 @@ export class TileMap extends GameObject {
         return this.width * this.height;
     }
 
+    get bottom(): number {
+        return this.height * this.size;
+    }
+
     constructor(
         public name: string,
     ) {

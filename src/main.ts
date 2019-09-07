@@ -29,7 +29,7 @@ function update() {
 function resize() {
     const body = document.body;
     canvas.width = canvas.height / body.clientHeight * body.clientWidth;
-    scene.cam.pos.x = (canvas.width - scene.cam.width) / 2;
+    scene.cam.pos.x = (canvas.width - scene.cam.box.width) / 2;
 }
 
 function bind() {

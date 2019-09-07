@@ -9,13 +9,13 @@ import Hud from "./Hud";
 import { Medkit, Item, AmmoBox, GrenadeBox } from "./Item";
 import config from "../config";
 import Explosion from "./Explosion";
+import Camera from "./Camera";
 
 export default class GameScene extends GameObject {
 
     hero = new Hero(config.hero);
     map = new TileMap("map");
-    cam = new Box(new Vec(0, -64), 192, 256);
-    spd = config.cam.spd;
+    cam = new Camera(config.cam, this.map.bottom);
     aim = new Vec();
     camps: ObjectPool = new ObjectPool(() => new EnemyCamper(this.hero, config.camp));
     shots: ObjectPool = new ObjectPool(() => new EnemyShooter(this.hero, config.shot));
@@ -26,7 +26,8 @@ export default class GameScene extends GameObject {
         super();
         this.hero.pos.set(96, 128);
         this.map.createNav(this.hero.box.center);
-        this.addChild(this.map)
+        this.addChild(this.cam)
+            .addChild(this.map)
             .addChild(this.camps)
             .addChild(this.shots)
             .addChild(this.hero)
@@ -122,9 +123,6 @@ export default class GameScene extends GameObject {
         this.updateProjectile(delta);
         this.updateMap();
         this.updateSpawners(delta);
-        const cam = this.cam;
-        const pos = this.hero.box.center;
-        this.cam.pos.y = pos.y - cam.height * .8;
     }
 
     updateHero(delta: number) {
@@ -140,7 +138,7 @@ export default class GameScene extends GameObject {
 
         const cam = this.cam;
         hero.aim.set(this.aim).add(-cam.pos.x, cam.pos.y);
-        const bottom = cam.pos.y + cam.height - hero.pos.y - hero.box.height
+        const bottom = cam.pos.y + cam.box.height - hero.pos.y - hero.box.height
         if (bottom < 0) {
             hero.pos.y += bottom;
         }
