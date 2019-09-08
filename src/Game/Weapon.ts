@@ -48,7 +48,7 @@ export class Bullet extends GameObject implements IMovable, IKiller {
     spd: number;
     dmg: number;
     size: number;
-    color: string;
+    color: number;
     pos: Vec;
     dir: Vec;
     box: Box;
@@ -67,7 +67,7 @@ export class Bullet extends GameObject implements IMovable, IKiller {
 
     render(ctx: CanvasRenderingContext2D) {
         let frame = Math.floor(this.time % 200 / 50);
-        Sprite.draw(ctx, "plasma", this.box, 0, frame % 2 > 0, frame > 1);
+        Sprite.draw(ctx, "plasma" + this.color, this.box, 0, frame % 2 > 0, frame > 1);
     }
 
     update(delta: number) {
@@ -89,7 +89,7 @@ export class Grenade extends Bullet {
     }
 
     render(ctx: CanvasRenderingContext2D) {
-        Sprite.draw(ctx, "grenade", this.box);
+        Sprite.draw(ctx, "grenade" + this.color, this.box);
     }
 
     update(delta: number) {

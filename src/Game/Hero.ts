@@ -52,7 +52,7 @@ export default class Hero extends GameObject implements IMovable, IKillable {
             frame = anim < 200 / 2 ? 1 : 2;
             flip = look.x > 0;
         }
-        Sprite.draw(ctx, "hero", this.box, frame, flip);
+        Sprite.draw(ctx, "hero2", this.box, frame, flip);
     }
 
     update(delta: number) {

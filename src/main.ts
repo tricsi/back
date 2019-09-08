@@ -59,6 +59,13 @@ function bind() {
 
 on(window, "load", async () => {
     await Sprite.load(require("./assets/texture.png"), require("./assets/texture.json"));
+    await Sprite.tint(ctx, .8, .3, .1); // brown
+    await Sprite.tint(ctx, .4, .9, .4); // green
+    await Sprite.tint(ctx, 1, .9, 0); // yellow
+    await Sprite.tint(ctx, .1, 1, 1); // cyan
+    await Sprite.tint(ctx, .8, .1, 1); // purple
+    canvas.style.display = "block";
+    // return;
     canvas.width = config.cam.width;
     canvas.height = config.cam.height;
     on(document, 'contextmenu', (e: MouseEvent) => e.preventDefault());

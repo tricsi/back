@@ -81,7 +81,7 @@ export class TileMap extends GameObject {
         for (let y = 0; y < this.height; y++) {
             for (let x = 0; x < this.width; x++) {
                 pos.set(x, y).scale(this.size);
-                Sprite.draw(ctx, "cave", box, this.frame[i++] - 1);
+                Sprite.draw(ctx, "cave1", box, this.frame[i++] - 1);
             }
             pos.x += this.size;
         }

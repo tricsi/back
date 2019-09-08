@@ -9,7 +9,7 @@ export interface IConfig {
     dmg?: number,
     score?: number,
     size?: number,
-    color?: string,
+    color?: number,
     width?: number,
     height?: number,
     radius?: number,
@@ -47,7 +47,8 @@ export default {
             bul: {
                 spd: 0.4,
                 dmg: 25,
-                size: 6
+                size: 6,
+                color: 4
             }
         },
         gnd: {
@@ -58,6 +59,7 @@ export default {
                 spd: 0.2,
                 dmg: 50,
                 size: 10,
+                color: 2,
                 radius: 48
             }
         }
@@ -79,7 +81,8 @@ export default {
             bul: {
                 spd: 0.1,
                 dmg: 10,
-                size: 6
+                size: 6,
+                color: 3
             }
         }
     },

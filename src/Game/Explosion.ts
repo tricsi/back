@@ -11,7 +11,7 @@ export default class Explosion extends GameObject {
     frame: number = 0;
 
     render(ctx: CanvasRenderingContext2D) {
-        Sprite.draw(ctx, "splash", this.box, this.frame, this.flip);
+        Sprite.draw(ctx, "splash3", this.box, this.frame, this.flip);
     }
 
     update(delta: number) {

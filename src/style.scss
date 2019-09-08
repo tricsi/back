@@ -10,7 +10,7 @@ body, html {
 }
 
 #game {
-    display: block;
+    display: none;
     margin: 0 auto;
     height: 100%;
     image-rendering: optimizeSpeed;
@@ -18,5 +18,5 @@ body, html {
     image-rendering: -o-crisp-edges;
     image-rendering: -webkit-optimize-contrast;
     image-rendering: pixelated;
-    background: #999;
+    background: #c96;
 }

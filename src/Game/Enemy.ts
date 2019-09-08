@@ -44,7 +44,7 @@ export class Enemy extends GameObject implements IKillable, IKiller {
 export class EnemyCamper extends Enemy {
 
     render(ctx: CanvasRenderingContext2D) {
-        Sprite.draw(ctx, "camp", this.box);
+        Sprite.draw(ctx, "camp2", this.box);
     }
 
 }
@@ -62,7 +62,7 @@ export class EnemyShooter extends Enemy {
     }
 
     render(ctx: CanvasRenderingContext2D) {
-        Sprite.draw(ctx, "shot", this.box);
+        Sprite.draw(ctx, "shot1", this.box);
         super.render(ctx);
     }
 
@@ -108,7 +108,7 @@ export class EnemyRunner extends Enemy implements IMovable
 
     render(ctx: CanvasRenderingContext2D) {
         let frame = Math.floor(this.time % 400 / 100);
-        Sprite.draw(ctx, "runner", this.box, frame > 1 ? 3 - frame : frame, frame > 1);
+        Sprite.draw(ctx, "runner5", this.box, frame > 1 ? 3 - frame : frame, frame > 1);
     }
 
     update(delta: number) {
@@ -156,7 +156,7 @@ export class EnemySpawner extends ObjectSpawner {
     }
 
     render(ctx: CanvasRenderingContext2D): void {
-        Sprite.draw(ctx, "hole", this.box);
+        Sprite.draw(ctx, "hole1", this.box);
         super.render(ctx);
     }
 
