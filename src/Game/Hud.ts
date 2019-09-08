@@ -1,22 +1,22 @@
 import { GameObject } from "./GameEngine";
-import { $ } from "../common";
 import Hero from "./Hero";
+import Txt from "./Txt";
+import { Vec } from "./Math";
 
 export default class Hud extends GameObject {
 
-    hud: HTMLCollectionOf<HTMLSpanElement>;
+    text = new Txt(new Vec(16));
 
     constructor(public hero: Hero) {
         super();
-        this.hud = $("#hud").getElementsByTagName("span");
+        this.addChild(this.text);
+        this.update(0);
     }
 
     update(delta: number) {
-        const hud = this.hud;
         const hero = this.hero;
-        hud.item(0).innerText = hero.hp.toString();
-        hud.item(1).innerText = hero.grenades.ammo.toString();
-        hud.item(2).innerText = hero.score.toString();
+        const score = new String(hero.score + 1000000).substr(1);
+        this.text.text = `SQUAD ${hero.lives}  GRENADE ${hero.grenades.ammo}  SCORE ${score}`;
     }
 
 }

@@ -1,6 +1,6 @@
 import { Vec, Box } from "./Math";
 import { IConfig } from "../config";
-import { GameObject } from "./GameEngine";
+import { GameObject, GameEvent } from "./GameEngine";
 import Hero from "./Hero";
 
 export default class Camera extends GameObject {
@@ -22,6 +22,12 @@ export default class Camera extends GameObject {
     }
 
     update(delta: number) {
+        if (
+            this.hero.alive &&
+            this.hero.box.bottom <= this.pos.y
+        ) {
+            this.emit(new GameEvent("death", this.hero));
+        }
         if (!this.move) {
             return;
         }

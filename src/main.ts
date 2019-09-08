@@ -3,6 +3,7 @@ import Sfx from "./sfx";
 import { on, $ } from "./common";
 import GameScene from "./Game/GameScene";
 import Sprite from "./Game/Sprite";
+import config from "./config";
 
 const canvas = $("#game") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d");
@@ -12,8 +13,7 @@ let running = false;
 let time: number;
 
 function render() {
-    ctx.fillStyle = "#999";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     scene.render(ctx);
 }
 
@@ -28,11 +28,12 @@ function update() {
 
 function resize() {
     const body = document.body;
-    canvas.width = canvas.height / body.clientHeight * body.clientWidth;
-    scene.cam.pos.x = (canvas.width - scene.cam.box.width) / 2;
+    // canvas.width = canvas.height / body.clientHeight * body.clientWidth;
+    // scene.cam.pos.x = (canvas.width - scene.cam.box.width) / 2;
 }
 
 function bind() {
+    const body = document.body;
     on(document, 'keydown', (e: KeyboardEvent) => {
         keys[e.keyCode] = true;
         scene.input(keys, true);
@@ -41,28 +42,29 @@ function bind() {
         keys[e.keyCode] = false;
         scene.input(keys, false);
     })
-    on(canvas, 'mousedown', (e: MouseEvent) => {
+    on(body, 'mousedown', (e: MouseEvent) => {
         keys[e.button] = true;
         scene.input(keys, true);
     });
-    on(canvas, 'mouseup', (e: MouseEvent) => {
+    on(body, 'mouseup', (e: MouseEvent) => {
         keys[e.button] = false;
         scene.input(keys, false);
     });
-    on(canvas, 'mousemove', (e: MouseEvent) => {
-        const body = document.body;
+    on(body, 'mousemove', (e: MouseEvent) => {
         const ratio = canvas.height / body.clientHeight;
-        scene.pointer(e.clientX * ratio, e.clientY * ratio);
+        const left = (body.clientWidth * ratio - canvas.width) / 2
+        scene.pointer(e.clientX * ratio - left, e.clientY * ratio);
     });
-    on(window, "resize", resize);
 }
 
 on(window, "load", async () => {
     await Sprite.load(require("./assets/texture.png"), require("./assets/texture.json"));
+    canvas.width = config.cam.width;
+    canvas.height = config.cam.height;
     on(document, 'contextmenu', (e: MouseEvent) => e.preventDefault());
+    on(window, "resize", resize);
     resize();
     render();
-    bind();
 });
 
 on(canvas, "click", async () => {
@@ -73,4 +75,5 @@ on(canvas, "click", async () => {
     time = new Date().getTime();
     running = true;
     update();
+    bind();
 });

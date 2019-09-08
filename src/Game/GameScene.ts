@@ -14,6 +14,7 @@ import Camera from "./Camera";
 export default class GameScene extends GameObject {
 
     hero = new Hero(config.hero);
+    hud = new Hud(this.hero);
     map = new TileMap("map");
     cam = new Camera(this.hero, config.cam, this.map.bottom);
     aim = new Vec();
@@ -27,12 +28,7 @@ export default class GameScene extends GameObject {
         this.hero.pos.set(96, 128);
         this.map.createNav(this.hero.box.center);
         this.addChild(this.cam)
-            .addChild(this.map)
-            .addChild(this.camps)
-            .addChild(this.shots)
-            .addChild(this.hero)
-            .addChild(this.explos)
-            .addChild(new Hud(this.hero));
+            .addChild(this.map);
         for (const pos of this.map.getPosByTile(Tile.CAMP)) {
             this.camps.create((item: EnemyCamper) => item.pos.set(pos));
         }
@@ -59,6 +55,10 @@ export default class GameScene extends GameObject {
             this.holes.push(hole);
             this.addChild(hole);
         }
+        this.addChild(this.camps)
+            .addChild(this.shots)
+            .addChild(this.hero)
+            .addChild(this.explos);
         this.bind();
     }
 
@@ -148,13 +148,15 @@ export default class GameScene extends GameObject {
 
     render(ctx: CanvasRenderingContext2D) {
         ctx.save();
-        ctx.translate(Math.round(this.cam.pos.x), -Math.round(this.cam.pos.y));
+        ctx.translate(0, -Math.round(this.cam.pos.y));
         super.render(ctx);
         ctx.restore();
+        this.hud.render(ctx);
     }
 
     update(delta: number) {
         super.update(delta);
+        this.hud.update(delta);
         this.updateProjectile(delta);
         if (!this.hero.alive) {
             return;
