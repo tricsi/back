@@ -1,16 +1,17 @@
 import "./style.scss";
-import Sfx from "./sfx";
+import Sfx, { Sound } from "./sfx";
 import { on, $ } from "./common";
 import GameScene from "./Game/GameScene";
 import Sprite from "./Game/Sprite";
 import config from "./config";
+import { GameStatus } from "./Game/Hud";
 
 const canvas = $("#game") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d");
-const scene = new GameScene();
 const keys: boolean[] = [];
+let scene = new GameScene();
 let running = false;
-let time: number;
+let time = new Date().getTime();
 
 function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -26,61 +27,69 @@ function update() {
     render();
 }
 
-function resize() {
-    const body = document.body;
-    // canvas.width = canvas.height / body.clientHeight * body.clientWidth;
-    // scene.cam.pos.x = (canvas.width - scene.cam.box.width) / 2;
-}
-
 function bind() {
     const body = document.body;
-    on(document, 'keydown', (e: KeyboardEvent) => {
+    on(document, "keydown", (e: KeyboardEvent) => {
         keys[e.keyCode] = true;
         scene.input(keys, true);
     });
-    on(document, 'keyup', (e: KeyboardEvent) => {
+    on(document, "keyup", (e: KeyboardEvent) => {
         keys[e.keyCode] = false;
         scene.input(keys, false);
     })
-    on(body, 'mousedown', (e: MouseEvent) => {
+    on(body, "mousedown", (e: MouseEvent) => {
         keys[e.button] = true;
         scene.input(keys, true);
     });
-    on(body, 'mouseup', (e: MouseEvent) => {
+    on(body, "mouseup", (e: MouseEvent) => {
         keys[e.button] = false;
         scene.input(keys, false);
     });
-    on(body, 'mousemove', (e: MouseEvent) => {
+    on(body, "mousemove", (e: MouseEvent) => {
         const ratio = canvas.height / body.clientHeight;
         const left = (body.clientWidth * ratio - canvas.width) / 2
         scene.pointer(e.clientX * ratio - left, e.clientY * ratio);
     });
+    on(document, "contextmenu", (e: MouseEvent) => e.preventDefault());
 }
 
 on(window, "load", async () => {
+    bind();
     await Sprite.load(require("./assets/texture.png"), require("./assets/texture.json"));
     await Sprite.tint(ctx, .8, .3, .1); // brown
     await Sprite.tint(ctx, .4, .9, .4); // green
     await Sprite.tint(ctx, 1, .9, 0); // yellow
     await Sprite.tint(ctx, .1, 1, 1); // cyan
     await Sprite.tint(ctx, .8, .1, 1); // purple
-    canvas.style.display = "block";
-    // return;
     canvas.width = config.cam.width;
     canvas.height = config.cam.height;
-    on(document, 'contextmenu', (e: MouseEvent) => e.preventDefault());
-    on(window, "resize", resize);
-    resize();
+    canvas.style.display = "block";
+    update();
     render();
 });
 
 on(canvas, "click", async () => {
     if (running) {
-        return;
+        switch (scene.hud.satus) {
+            case GameStatus.run:
+                return;
+            case GameStatus.start:
+                scene.hud.satus = GameStatus.run;
+                return;
+            default:
+                scene = new GameScene();
+                return;
+        }
     }
     await Sfx.init();
-    time = new Date().getTime();
+    await Promise.all([
+        Sfx.sound("hit", new Sound("custom", [2, 1, 0], 1), [110, 0], .2),
+        Sfx.sound("fire", new Sound("square", [.2, .1, 0], .2), [660, 110], .1),
+        Sfx.sound("eject", new Sound("triangle", [.2, .1, 0], .2), [220, 0], .1),
+        Sfx.sound("launch", new Sound("custom", [1, .5, 0], 1), [880, 0], .1),
+        Sfx.sound("explode", new Sound("custom", [5, 1, 0], 1), [220, 0], 1),
+        Sfx.sound("item", new Sound("square", [.3, .1, 0], 1), [220, 440, 220, 440, 220, 440, 220, 440], .3),
+    ]);
     running = true;
-    update();
-    bind();
+    scene.hud.satus = GameStatus.run;
 });

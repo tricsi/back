@@ -39,6 +39,16 @@ export class Enemy extends GameObject implements IKillable, IKiller {
         }
     }
 
+    hit(hp: number) {
+        this.hp -= hp;
+        if (this.hp > 0) {
+            return;
+        }
+        this.emit(new GameEvent("kill", this));
+        this.parent.removeChild(this);
+        this.hp = this.max;
+    }
+
 }
 
 export class EnemyCamper extends Enemy {
@@ -87,7 +97,7 @@ export class EnemyShooter extends Enemy {
             const box = bullet.box;
             bullet.dir.set(diff.normalize());
             bullet.pos.set(center.sub(box.width / 2, box.height / 2));
-            this.emit(new GameEvent("fire", bullet));
+            this.emit(new GameEvent("eject", bullet));
         });
     }
 

@@ -83,4 +83,18 @@ export default class Hero extends GameObject implements IMovable, IKillable {
         });
     }
 
+    hit(hp: number) {
+        this.hp -= hp;
+        if (this.hp > 0) {
+            return;
+        }
+        if (--this.lives > 0) {
+            this.hp = this.max;
+            this.emit(new GameEvent("death", this));
+            return;
+        }
+        this.hp = 0;
+        this.emit(new GameEvent("lose", this));
+    }
+
 }

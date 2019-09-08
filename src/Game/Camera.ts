@@ -22,11 +22,13 @@ export default class Camera extends GameObject {
     }
 
     update(delta: number) {
+        const hero = this.hero;
         if (
-            this.hero.alive &&
-            this.hero.box.bottom <= this.pos.y
+            hero.alive &&
+            hero.box.bottom <= this.pos.y
         ) {
-            this.emit(new GameEvent("death", this.hero));
+            hero.lives--;
+            this.emit(new GameEvent("death", hero));
         }
         if (!this.move) {
             return;

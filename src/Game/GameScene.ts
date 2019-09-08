@@ -5,18 +5,19 @@ import { TileMap, Tile } from "./TileMap";
 import { EnemyRunner, EnemySpawner, EnemyCamper, EnemyShooter, Enemy } from "./Enemy";
 import { Vec, Box } from "./Math";
 import { Bullet, Grenade } from "./Weapon";
-import Hud from "./Hud";
+import Hud, { GameStatus } from "./Hud";
 import { Medkit, Item, AmmoBox, GrenadeBox } from "./Item";
 import config from "../config";
 import Explosion from "./Explosion";
 import Camera from "./Camera";
+import sfx from "../sfx";
 
 export default class GameScene extends GameObject {
 
     hero = new Hero(config.hero);
-    hud = new Hud(this.hero);
     map = new TileMap("map");
     cam = new Camera(this.hero, config.cam, this.map.bottom);
+    hud = new Hud(this.hero, this.cam);
     aim = new Vec();
     holes: EnemySpawner[] = [];
     camps: ObjectPool = new ObjectPool(() => new EnemyCamper(this.hero, config.camp));
@@ -25,7 +26,7 @@ export default class GameScene extends GameObject {
 
     constructor() {
         super();
-        this.hero.pos.set(96, 128);
+        this.hero.pos.set(96, 112);
         this.map.createNav(this.hero.box.center);
         this.addChild(this.cam)
             .addChild(this.map);
@@ -63,36 +64,33 @@ export default class GameScene extends GameObject {
     }
 
     bind() {
+        this.on("all", (event: GameEvent) => sfx.play(event.type));
         this.on("hit", this.onHit);
         this.on("kill", this.onKill);
         this.on("death", this.onDeath);
         this.on("explode", this.onExplode);
+        this.on("lose", (event: GameEvent) => {
+            this.hud.satus = GameStatus.lose;
+        });
+        this.on("win", (event: GameEvent) => {
+            this.hud.satus = GameStatus.win;
+        });
     }
 
     onHit = (event: GameEvent) => {
         const target = event.target;
         if (target instanceof Enemy) {
-            target.hp -= event.payload;
-            if (target.hp <= 0) {
-                this.emit(new GameEvent("kill", target));
-                target.parent.removeChild(target);
-                target.hp = target.max;
-            }
+            target.hit(event.payload);
         }
         if (target instanceof Hero) {
-            target.hp -= event.payload;
-            if (target.hp <= 0) {
-                this.emit(new GameEvent("death", target));
-            }
+            target.hit(event.payload);
         }
     }
 
     onKill = (event: GameEvent) => {
-        const target = event.target;
-        if (target instanceof Enemy) {
-            this.hero.score += target.score;
-            this.createExplo(target.pos);
-        }
+        const target = event.target as Enemy;
+        this.hero.score += target.score;
+        this.createExplo(target.pos);
     }
 
     onDeath = (event: GameEvent) => {
@@ -100,12 +98,7 @@ export default class GameScene extends GameObject {
         const pos = hero.pos.clone();
         this.createExplo(pos);
         this.createExplo(pos.add(0, 8));
-        hero.lives--;
-        if (hero.alive) {
-            this.revive(hero);
-            return;
-        }
-        this.cam.move = false;
+        this.revive(hero);
     }
 
     revive(hero: Hero) {
@@ -155,12 +148,12 @@ export default class GameScene extends GameObject {
     }
 
     update(delta: number) {
-        super.update(delta);
         this.hud.update(delta);
-        this.updateProjectile(delta);
-        if (!this.hero.alive) {
+        if (this.hud.satus !== GameStatus.run) {
             return;
         }
+        super.update(delta);
+        this.updateProjectile(delta);
         this.updateHero(delta);
         this.updateMap();
         this.updateSpawners(delta);
@@ -168,21 +161,21 @@ export default class GameScene extends GameObject {
 
     updateHero(delta: number) {
         const hero = this.hero;
+        const map = this.map;
+        const cam = this.cam;
+        const bottom = cam.box.bottom - hero.box.bottom;
         if (hero.dir.x) {
             hero.pos.x += hero.dir.x * hero.spd * delta;
-            this.map.collideX(hero.box, true);
+            map.collideX(hero.box, true);
         }
-        if (hero.dir.y) {
+        if (hero.dir.y && (hero.dir.y < 0 || bottom > 0)) {
             hero.pos.y += hero.dir.y * hero.spd * delta;
+            map.collideY(hero.box, true);
         }
-        this.map.collideY(hero.box, true);
-
-        const cam = this.cam;
+        if (hero.box.bottom >= map.bottom) {
+            hero.emit(new GameEvent("win", hero));
+        }
         hero.aim.set(this.aim).add(-cam.pos.x, cam.pos.y);
-        const bottom = cam.box.bottom - hero.box.bottom;
-        if (bottom < 0) {
-            hero.pos.y += bottom;
-        }
     }
 
     updateProjectile(delta: number) {
