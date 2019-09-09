@@ -11,7 +11,9 @@ export enum Tile {
     CAMP = 3,
     SHOT = 4,
     WORM = 5,
-    ITEM = 6,
+    HEAL = 6,
+    AMMO = 7,
+    NUKE = 8,
 }
 
 export class TileMap extends GameObject {

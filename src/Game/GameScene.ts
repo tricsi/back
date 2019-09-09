@@ -36,13 +36,8 @@ export default class GameScene extends GameObject {
         for (const pos of this.map.getPosByTile(Tile.SHOT)) {
             this.shots.create((item: EnemyShooter) => item.pos.set(pos));
         }
-        for (const pos of this.map.getPosByTile(Tile.ITEM)) {
-            let item: Item;
-            switch (Math.floor(Math.random() * 2.999)) {
-                case 0: item = new Medkit(this.hero, 100, "#fff"); break;
-                case 1: item = new AmmoBox(this.hero, 200, "#0ff"); break;
-                case 2: item = new GrenadeBox(this.hero, 5, "#0c0"); break;
-            }
+        for (const pos of this.map.getPosByTile(Tile.HEAL)) {
+            let item: Item = new Medkit(this.hero, 100, "#fff");
             item.pos.set(pos);
             this.addChild(item);
         }
