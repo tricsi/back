@@ -14,6 +14,7 @@ export enum Tile {
     HEAL = 6,
     AMMO = 7,
     NUKE = 8,
+    HERO = 9,
 }
 
 export class TileMap extends GameObject {
@@ -81,9 +82,14 @@ export class TileMap extends GameObject {
         const box = new Box(pos, this.size, this.size * 1.5);
         let i = 0;
         for (let y = 0; y < this.height; y++) {
+            const last = y === this.height - 1;
             for (let x = 0; x < this.width; x++) {
+                const frame = this.frame[i++];
+                if (!frame && !last) {
+                    continue;
+                }
                 pos.set(x, y).scale(this.size);
-                Sprite.draw(ctx, "cave1", box, this.frame[i++] - 1);
+                Sprite.draw(ctx, "cave1", box, frame);
             }
             pos.x += this.size;
         }

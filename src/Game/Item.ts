@@ -6,14 +6,19 @@ import Sprite from "./Sprite";
 export abstract class Item extends GameObject {
 
     pos = new Vec();
-    box = new Box(this.pos, 10);
+    box = new Box(this.pos, 16);
 
     constructor(
         public hero: Hero,
         public value: number,
-        public color: string
+        public frame: number,
+        public color: number
     ) {
         super();
+    }
+
+    render(ctx: CanvasRenderingContext2D) {
+        Sprite.draw(ctx, "item" + this.color, this.box, this.frame);
     }
 
     update(delta: number) {
@@ -29,10 +34,6 @@ export abstract class Item extends GameObject {
 
 export class Medkit extends Item {
 
-    render(ctx: CanvasRenderingContext2D) {
-        Sprite.draw(ctx, "item", this.box, 0);
-    }
-
     power() {
         const hero = this.hero;
         hero.hp += this.value;
@@ -44,22 +45,6 @@ export class Medkit extends Item {
 }
 
 export class AmmoBox extends Item {
-
-    render(ctx: CanvasRenderingContext2D) {
-        Sprite.draw(ctx, "item", this.box, 1);
-    }
-
-    power() {
-        this.hero.grenades.load(this.value);
-    }
-
-}
-
-export class GrenadeBox extends Item {
-
-    render(ctx: CanvasRenderingContext2D) {
-        Sprite.draw(ctx, "item", this.box, 2);
-    }
 
     power() {
         this.hero.grenades.load(this.value);

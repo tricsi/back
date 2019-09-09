@@ -6,7 +6,7 @@ import { EnemyRunner, EnemySpawner, EnemyCamper, EnemyShooter, Enemy } from "./E
 import { Vec, Box } from "./Math";
 import { Bullet, Grenade } from "./Weapon";
 import Hud, { GameStatus } from "./Hud";
-import { Medkit, Item, AmmoBox, GrenadeBox } from "./Item";
+import { Medkit, AmmoBox } from "./Item";
 import config from "../config";
 import Explosion from "./Explosion";
 import Camera from "./Camera";
@@ -30,6 +30,9 @@ export default class GameScene extends GameObject {
         this.map.createNav(this.hero.box.center);
         this.addChild(this.cam)
             .addChild(this.map);
+        for (const pos of this.map.getPosByTile(Tile.HERO)) {
+            this.hero.pos.set(pos);
+        }
         for (const pos of this.map.getPosByTile(Tile.CAMP)) {
             this.camps.create((item: EnemyCamper) => item.pos.set(pos));
         }
@@ -37,7 +40,12 @@ export default class GameScene extends GameObject {
             this.shots.create((item: EnemyShooter) => item.pos.set(pos));
         }
         for (const pos of this.map.getPosByTile(Tile.HEAL)) {
-            let item: Item = new Medkit(this.hero, 100, "#fff");
+            let item = new Medkit(this.hero, 100, 0, 0);
+            item.pos.set(pos);
+            this.addChild(item);
+        }
+        for (const pos of this.map.getPosByTile(Tile.AMMO)) {
+            let item = new AmmoBox(this.hero, 100, 1, 0);
             item.pos.set(pos);
             this.addChild(item);
         }
