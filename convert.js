@@ -5,9 +5,10 @@ let tile = 0;
 let count = 0;
 let out = "";
 for (let i = 0; i < data.length; i++) {
-    if (data[i] !== tile || count >= 36) {
+    if (data[i] !== tile || count === 35) {
         if (count) {
-            out += tile.toString(36) + count.toString(36);
+            tile = tile > 1 ? tile : 1 - tile;
+            out = out + tile.toString(36) + count.toString(36);
         }
         tile = data[i];
         count = 1;
@@ -15,5 +16,6 @@ for (let i = 0; i < data.length; i++) {
     }
     count++;
 }
-out += tile.toString(36) + count.toString(36);
-console.log(data.length, out.length, JSON.stringify(out));
+tile = tile > 1 ? tile : 1 - tile;
+out = out + tile.toString(36) + count.toString(36);
+console.log(out);
