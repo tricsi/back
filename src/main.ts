@@ -68,7 +68,7 @@ on(window, "load", async () => {
     render();
 });
 
-on(canvas, "click", async () => {
+on(canvas, "mousedown", async () => {
     if (running) {
         switch (scene.hud.satus) {
             case GameStatus.run:

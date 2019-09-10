@@ -2,7 +2,7 @@ import Hero from "./Hero";
 import { GameObject, GameEvent, ObjectPool } from "./GameEngine";
 import { Input, Rand } from "../common";
 import { TileMap, Tile } from "./TileMap";
-import { EnemyRunner, EnemySpawner, EnemyCamper, EnemyShooter, Enemy } from "./Enemy";
+import { EnemyRunner, EnemySpawner, EnemyCamper, EnemyShooter, Enemy, EnemyWorm } from "./Enemy";
 import { Vec, Box } from "./Math";
 import { Bullet, Grenade } from "./Weapon";
 import Hud, { GameStatus } from "./Hud";
@@ -22,6 +22,7 @@ export default class GameScene extends GameObject {
     holes: EnemySpawner[] = [];
     camps: ObjectPool = new ObjectPool(() => new EnemyCamper(this.hero, config.camp));
     shots: ObjectPool = new ObjectPool(() => new EnemyShooter(this.hero, config.shot));
+    worms: ObjectPool = new ObjectPool(() => new EnemyWorm(this.hero, config.worm));
     explos: ObjectPool = new ObjectPool(() => new Explosion());
 
     constructor() {
@@ -29,7 +30,9 @@ export default class GameScene extends GameObject {
         this.hero.pos.set(96, 112);
         this.map.createNav(this.hero.box.center);
         this.addChild(this.cam)
-            .addChild(this.map);
+            .addChild(this.map)
+            .addChild(this.worms)
+            .addChild(this.shots);
         for (const pos of this.map.getPosByTile(Tile.HERO)) {
             this.hero.pos.set(pos);
         }
@@ -38,6 +41,12 @@ export default class GameScene extends GameObject {
         }
         for (const pos of this.map.getPosByTile(Tile.SHOT)) {
             this.shots.create((item: EnemyShooter) => item.pos.set(pos));
+        }
+        for (const pos of this.map.getPosByTile(Tile.WORM)) {
+            this.worms.create((item: EnemyWorm) => {
+                item.time = pos.x * 6;
+                item.pos.set(pos);
+            });
         }
         for (const pos of this.map.getPosByTile(Tile.HEAL)) {
             let item = new Medkit(this.hero, 100, 0, 0);
@@ -60,7 +69,6 @@ export default class GameScene extends GameObject {
             this.addChild(hole);
         }
         this.addChild(this.camps)
-            .addChild(this.shots)
             .addChild(this.hero)
             .addChild(this.explos);
         this.bind();
@@ -107,7 +115,7 @@ export default class GameScene extends GameObject {
     revive(hero: Hero) {
         const map = this.map;
         let row = Math.floor(this.cam.box.bottom / map.size);
-        if (row > map.height) {
+        if (row >= map.height) {
             row = map.height - 1;
         }
         const pos = map.getPosByTile(Tile.GROUND, row);
@@ -128,6 +136,7 @@ export default class GameScene extends GameObject {
     explode(grenade: Grenade, item: Enemy) {
         const center = grenade.box.center;
         const dist = item.box.center.sub(center).length;
+        this.createExplo(grenade.pos);
         if (grenade.radius >= dist) {
             this.emit(new GameEvent("hit", item, grenade.dmg));
         }

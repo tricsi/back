@@ -22,23 +22,6 @@ export class Enemy extends GameObject implements IKillable, IKiller {
         this.score = score
     }
 
-    update(delta: number) {
-        super.update(delta);
-        if (this.box.collide(this.hero.box)) {
-            this.emit(new GameEvent("hit", this.hero, this.dmg));
-            this.emit(new GameEvent("kill", this));
-            this.parent.removeChild(this);
-            return;
-        }
-        for (const bullet of this.hero.gun.children) {
-            if (this.box.collide(bullet.box)) {
-                this.emit(new GameEvent("hit", this, bullet.dmg));
-                bullet.parent.removeChild(bullet);
-                return;
-            }
-        }
-    }
-
     hit(hp: number) {
         this.hp -= hp;
         if (this.hp > 0) {
@@ -57,15 +40,74 @@ export class EnemyCamper extends Enemy {
         Sprite.draw(ctx, "camp2", this.box);
     }
 
+    update(delta: number) {
+        super.update(delta);
+        for (const bullet of this.hero.gun.children) {
+            if (this.box.collide(bullet.box)) {
+                this.emit(new GameEvent("hit", this, bullet.dmg));
+                bullet.parent.removeChild(bullet);
+                return;
+            }
+        }
+        if (this.box.collide(this.hero.box)) {
+            this.emit(new GameEvent("hit", this.hero, this.dmg));
+            this.emit(new GameEvent("kill", this));
+            this.parent.removeChild(this);
+            return;
+        }
+    }
+
 }
 
-export class EnemyShooter extends Enemy {
+export class EnemyWorm extends Enemy {
 
+    spd: number;
+    frq: number;
+    time = 0;
+    frame = 0;
+    hitFrame = 0;
+    active = true;
+
+    constructor(public hero: Hero, {hp, dmg, score, spd, frq}: IConfig = {}) {
+        super(hero, {hp, dmg, score});
+        this.spd = spd;
+        this.frq = frq;
+    }
+
+    render(ctx: CanvasRenderingContext2D) {
+        if (this.active) {
+            const frame = Math.abs(this.frame % 5 - 2);
+            Sprite.draw(ctx, "worm1", this.box, frame);
+        }
+    }
+
+    update(delta: number) {
+        super.update(delta);
+        this.time += delta;
+        this.frame = Math.floor(this.time % this.frq / this.spd);
+        this.active = this.frame < 5;
+        if (!this.active || this.frame === this.hitFrame) {
+            return;
+        }
+        if (this.box.collide(this.hero.box)) {
+            this.hitFrame = this.frame;
+            this.emit(new GameEvent("hit", this.hero, this.dmg));
+            return;
+        }
+    }
+
+}
+
+export class EnemyShooter extends EnemyCamper {
+
+    active = false;
+    near: number;
     far: number;
     gun: Weapon;
 
-    constructor(public hero: Hero, {hp, dmg, score, far, gun}: IConfig = {}) {
+    constructor(public hero: Hero, {hp, dmg, score, near, far, gun}: IConfig = {}) {
         super(hero, {hp, dmg, score});
+        this.near = near;
         this.far = far;
         this.gun = new Weapon(() => new Bullet(gun.bul), gun);
         this.addChild(this.gun);
@@ -73,15 +115,11 @@ export class EnemyShooter extends Enemy {
 
     render(ctx: CanvasRenderingContext2D) {
         Sprite.draw(ctx, "shot1", this.box);
-        super.render(ctx);
     }
 
     update(delta: number) {
         super.update(delta);
         const hero = this.hero;
-        if (!hero.alive) {
-            return;
-        }
         this.gun.each((bullet: Bullet) => {
             if (bullet.box.collide(hero.box)) {
                 this.emit(new GameEvent("hit", hero, bullet.dmg));
@@ -90,7 +128,11 @@ export class EnemyShooter extends Enemy {
         });
         const center = this.box.center;
         const diff = hero.box.center.sub(center);
-        if (diff.length > this.far) {
+        const distance = diff.length;
+        this.active =
+            (this.active && distance < this.far) ||
+            (!this.active && distance < this.near);
+        if (!this.active) {
             return;
         }
         this.gun.create((bullet: Bullet) => {
@@ -103,7 +145,7 @@ export class EnemyShooter extends Enemy {
 
 }
 
-export class EnemyRunner extends Enemy implements IMovable
+export class EnemyRunner extends EnemyCamper implements IMovable
 {
 
     dir = new Vec();

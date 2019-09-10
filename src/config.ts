@@ -70,10 +70,11 @@ export default {
         score: 10
     },
     shot: {
-        hp: 50,
+        hp: 150,
         dmg: 0,
         score: 50,
-        far: 200,
+        near: 96,
+        far: 160,
         gun: {
             frq: 800,
             amm: 9999,
@@ -85,6 +86,13 @@ export default {
                 color: 4
             }
         }
+    },
+    worm: {
+        hp: 500,
+        dmg: 2,
+        score: 95,
+        spd: 100,
+        frq: 2500
     },
     hole: {
         frq: 300,
