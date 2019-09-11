@@ -5,11 +5,15 @@ import GameScene from "./Game/GameScene";
 import Sprite from "./Game/Sprite";
 import config from "./config";
 import { GameStatus } from "./Game/Hud";
+import { TileMap } from "./Game/TileMap";
 
 const canvas = $("#game") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d");
 const keys: boolean[] = [];
-let scene = new GameScene();
+const maps: string[] = [
+    "021605190212211541120115911z1j013516061a031a03162113021a021a02190317041s01115811021a021b0111023216310516411402182111021a021a01130215021302611402130213811102130215021b011z17033118043117053116061507147107140715061507140715071605311621041902311921011e310417061606160518031f411q011b011b0217210516061603",
+];
+let scene = new GameScene(new TileMap(maps[0]));
 let running = false;
 let time = new Date().getTime();
 
@@ -77,7 +81,7 @@ on(canvas, "mousedown", async () => {
                 scene.hud.satus = GameStatus.run;
                 return;
             default:
-                scene = new GameScene();
+                scene = new GameScene(new TileMap(maps[0]));
                 return;
         }
     }

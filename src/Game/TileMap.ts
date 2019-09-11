@@ -21,8 +21,8 @@ export class TileMap extends GameObject {
 
     static readonly MAX_NAV = 30;
 
-    width: number;
-    height: number;
+    width: number = 14;
+    height: number = 1;
     size: number = 16;
     tiles: number[];
     nav: number[];
@@ -36,19 +36,23 @@ export class TileMap extends GameObject {
         return this.height * this.size;
     }
 
-    constructor(
-        public name: string,
-    ) {
+    constructor(public map: string) {
         super();
-        const map = TileMaps[name];
-        this.width = map.width + 2;
-        this.height = map.height + 1;
-        this.tiles = new Array(this.width * this.height).fill(Tile.WALL);
-        map.layers[0].data.forEach((tile: number, i: number) => {
-            let x = i % map.width + 1;
-            let y = Math.floor(i / map.width) + 1;
-            this.tiles[y * this.width + x] = tile > 1 ? tile : 1 - tile;
-        });
+        let length = 0;
+        this.tiles = new Array(this.width + 1).fill(0);
+        for (let i = 0; i < map.length; i += 2) {
+            const tile = parseInt(map.charAt(i), 36);
+            const count = parseInt(map.charAt(i + 1), 36);
+            for (let j = 0; j < count; j++) {
+                if (length && length % 12 === 0) {
+                    this.tiles.push(0, 0);
+                    this.height++;
+                }
+                this.tiles.push(tile);
+                length++;
+            }
+        }
+        this.tiles.push(0);
         this.loadFrames();
     }
 

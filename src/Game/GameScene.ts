@@ -15,7 +15,6 @@ import sfx from "../sfx";
 export default class GameScene extends GameObject {
 
     hero = new Hero(config.hero);
-    map = new TileMap("map");
     cam = new Camera(this.hero, config.cam, this.map.bottom);
     hud = new Hud(this.hero, this.cam);
     aim = new Vec();
@@ -25,7 +24,7 @@ export default class GameScene extends GameObject {
     worms: ObjectPool = new ObjectPool(() => new EnemyWorm(this.hero, config.worm));
     explos: ObjectPool = new ObjectPool(() => new Explosion());
 
-    constructor() {
+    constructor(public map: TileMap) {
         super();
         this.hero.pos.set(96, 112);
         this.map.createNav(this.hero.box.center);
