@@ -32,6 +32,7 @@ export default class GameScene extends GameObject {
         this.addChild(this.cam)
             .addChild(this.map)
             .addChild(this.worms)
+            .addChild(this.camps)
             .addChild(this.shots);
         for (const pos of this.map.getPosByTile(Tile.HERO)) {
             this.hero.pos.set(pos);
@@ -68,8 +69,7 @@ export default class GameScene extends GameObject {
             this.holes.push(hole);
             this.addChild(hole);
         }
-        this.addChild(this.camps)
-            .addChild(this.hero)
+        this.addChild(this.hero)
             .addChild(this.explos);
         this.bind();
     }

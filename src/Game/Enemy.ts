@@ -115,6 +115,7 @@ export class EnemyShooter extends EnemyCamper {
 
     render(ctx: CanvasRenderingContext2D) {
         Sprite.draw(ctx, "shot1", this.box);
+        this.gun.render(ctx);
     }
 
     update(delta: number) {
