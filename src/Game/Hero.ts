@@ -18,20 +18,23 @@ export default class Hero extends GameObject implements IMovable, IKillable {
     gun: Weapon;
     grenades: Weapon;
     lives: number;
+    delay: number;
     time: number = 0;
+    resist: number = 0;
 
     get alive(): boolean {
         return this.lives > 0;
     }
 
-    constructor({x, y, hp, spd, score, lives, gun, gnd}: IConfig = {}) {
+    constructor({hp, spd, score, lives, delay, gun, gnd}: IConfig = {}) {
         super();
         this.hp = hp;
         this.max = hp;
         this.spd = spd;
         this.lives = lives;
+        this.delay = delay;
         this.score = score;
-        this.pos = new Vec(x, y);
+        this.pos = new Vec();
         this.box = new Box(this.pos, 16, 24);
         this.gun = new Weapon(() => new Bullet(gun.bul), gun);
         this.grenades = new Weapon(() => new Grenade(gnd.bul), gnd)
@@ -44,7 +47,7 @@ export default class Hero extends GameObject implements IMovable, IKillable {
         if (!this.alive) {
             return;
         }
-        const look =  this.aim.clone().sub(this.box.center);
+        const look = this.aim.clone().sub(this.box.center);
         let frame = look.y >= 0 ? 0 : 3,
             anim = this.time % 200,
             flip = anim < 200 / 2;
@@ -52,11 +55,13 @@ export default class Hero extends GameObject implements IMovable, IKillable {
             frame = anim < 200 / 2 ? 1 : 2;
             flip = look.x > 0;
         }
-        Sprite.draw(ctx, "hero2", this.box, frame, flip);
+        const name = this.resist % 500 > 250 ? "hero" : "hero2";
+        Sprite.draw(ctx, name, this.box, frame, flip);
     }
 
     update(delta: number) {
         super.update(delta);
+        this.resist -= delta;
         if (this.dir.length) {
             this.time += delta;
         }
@@ -84,12 +89,16 @@ export default class Hero extends GameObject implements IMovable, IKillable {
     }
 
     hit(hp: number) {
+        if (this.resist > 0) {
+            return;
+        }
         this.hp -= hp;
         if (this.hp > 0) {
             return;
         }
         if (--this.lives > 0) {
             this.hp = this.max;
+            this.resist = this.delay;
             this.emit(new GameEvent("death", this));
             return;
         }

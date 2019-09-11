@@ -12,11 +12,11 @@ export default class Camera extends GameObject {
 
     constructor(
         public hero: Hero,
-        {x, y, width, height, spd}: IConfig,
+        {width, height, spd}: IConfig,
         public bottom: number
     ) {
         super();
-        this.pos = new Vec(x, y);
+        this.pos = new Vec();
         this.box = new Box(this.pos, width, height);
         this.spd = spd;
     }

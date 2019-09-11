@@ -25,7 +25,6 @@ export default class GameScene extends GameObject {
 
     constructor(public hero: Hero, public map: TileMap) {
         super();
-        this.hero.pos.set(96, 112);
         this.map.createNav(this.hero.box.center);
         this.addChild(this.cam)
             .addChild(this.map)

@@ -7,6 +7,7 @@ export interface IConfig {
     amm?: number,
     mag?: number,
     dmg?: number,
+    delay?: number,
     score?: number,
     size?: number,
     color?: number,
@@ -27,19 +28,16 @@ export interface IConfig {
 
 export default {
     cam: {
-        x: 0,
-        y: 0,
         width: 224,
         height: 256,
         spd: 0.02
     },
     hero: {
-        x: 96,
-        y: 128,
         hp: 100,
         spd: 0.07,
         score: 0,
         lives: 3,
+        delay: 3000,
         gun: {
             frq: 80,
             amm: 9999,
