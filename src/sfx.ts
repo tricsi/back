@@ -49,10 +49,10 @@ export class Channel {
             }
         }
         notes.split(",").forEach((code) => {
-            let div = code.match(/^(\d+)/),
+            let div = code.match(/^([\d\.]+)/),
                 freqs = code.match(/([a-z]+\d+)/g);
             if (div) {
-                let time = tempo / parseInt(div[1]),
+                let time = tempo * parseFloat(div[1]),
                     row = [time];
                 this.length += time;
                 if (freqs) {
@@ -106,7 +106,7 @@ export default {
             await out.resume();
         }
         const a = Math.pow(2, 1 / 12);
-        for (let n = -57; n < 50; n++) {
+        for (let n = -69; n < 50; n++) {
             freq.push(Math.pow(a, n) * 440);
         }
         noise = out.createBuffer(1, bitrate * 2, bitrate);

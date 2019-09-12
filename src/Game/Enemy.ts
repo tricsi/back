@@ -37,7 +37,7 @@ export class Enemy extends GameObject implements IKillable, IKiller {
 export class EnemyCamper extends Enemy {
 
     render(ctx: CanvasRenderingContext2D) {
-        Sprite.draw(ctx, "camp2", this.box);
+        Sprite.draw(ctx, "camp6", this.box);
     }
 
     update(delta: number) {
@@ -130,9 +130,10 @@ export class EnemyShooter extends EnemyCamper {
         const center = this.box.center;
         const diff = hero.box.center.sub(center);
         const distance = diff.length;
-        this.active =
-            (this.active && distance < this.far) ||
-            (!this.active && distance < this.near);
+        this.active = (this.active && distance < this.far) || (
+            !this.active && distance < this.near &&
+            hero.box.bottom > this.pos.y
+        );
         if (!this.active) {
             return;
         }

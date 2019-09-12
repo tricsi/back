@@ -1,5 +1,5 @@
 import "./style.scss";
-import Sfx, { Sound } from "./sfx";
+import Sfx, { Sound, Channel } from "./sfx";
 import { on, $ } from "./common";
 import GameScene from "./Game/GameScene";
 import Sprite from "./Game/Sprite";
@@ -17,6 +17,7 @@ let hero = new Hero(config.hero);
 let scene = new GameScene(hero, map);
 let time = new Date().getTime();
 let running = false;
+let music: AudioBufferSourceNode = null;
 
 function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -58,42 +59,8 @@ function bind() {
     on(document, "contextmenu", (e: MouseEvent) => e.preventDefault());
 }
 
-on(window, "load", async () => {
-    bind();
-    await Sprite.load(require("./assets/texture.png"), require("./assets/texture.json"));
-    await Sprite.tint(ctx, .8, .3, .1); // brown
-    await Sprite.tint(ctx, .4, .9, .4); // green
-    await Sprite.tint(ctx, 1, .9, 0); // yellow
-    await Sprite.tint(ctx, .1, 1, 1); // cyan
-    await Sprite.tint(ctx, .8, .1, 1); // purple
-    canvas.width = config.cam.width;
-    canvas.height = config.cam.height;
-    canvas.style.display = "block";
-    update();
-    render();
-});
-
-on(canvas, "mousedown", async () => {
-    if (running) {
-        switch (scene.hud.satus) {
-            case GameStatus.run:
-                break;
-            case GameStatus.start:
-                scene.hud.satus = GameStatus.run;
-                break;
-            case GameStatus.win:
-                map = new TileMap(++level);
-                scene = new GameScene(hero, map);
-                break;
-            default:
-                level = 0;
-                hero = new Hero(config.hero);
-                map = new TileMap(level);
-                scene = new GameScene(hero, map);
-                break;
-        }
-        return;
-    }
+async function init() {
+    running = true;
     await Sfx.init();
     await Promise.all([
         Sfx.sound("hit", new Sound("custom", [2, 1, 0], 1), [110, 0], .2),
@@ -102,7 +69,55 @@ on(canvas, "mousedown", async () => {
         Sfx.sound("launch", new Sound("custom", [1, .5, 0], 1), [880, 0], .1),
         Sfx.sound("explode", new Sound("custom", [5, 1, 0], 1), [220, 0], 1),
         Sfx.sound("item", new Sound("square", [.3, .1, 0], 1), [220, 440, 220, 440, 220, 440, 220, 440], .3),
+        Sfx.music("music", [
+            new Channel(new Sound("sawtooth", [.2, .2], .2), "2c5eb5g5,1f4ab4c5,1g4bb4d5,2c5eb5g5,1f4ab4c5,1bb4d5ff5|3|", 1),
+            new Channel(new Sound("square", [1, .3], .2), "2c4,2c4,1c3,2c4,3ab3,2ab3,2ab2,2ab3,2f2,2f2,2g3,2g2,2bb2,2bb3,2g2,2g3,2c4,2c4,1c3,2c4,3ab3,2ab3,2ab2,2ab3,1f2,1f3,1f2,1f3,2g3,2g2,1bb2,1,2bb3,2g2,2g3|3|", .125),
+            new Channel(new Sound("square", [.5, .5], 1), "2,2c5,2eb5,1g5,2d5,3c5,4ab4,2,2f4,2g4,1f4,2bb4,1eb4,2g4,2b4,2g4,2,2c5,2eb5,1g5,2d5,3c5,4ab4,2,2g5,3bb5,3eb6,2d6,2bb5,2c6,2,2c5,2eb5,1g5,2d5,3c5,4ab4,2,2f4,2g4,1f4,2bb4,1eb4,2g4,2b4,2g4,2,2c5,2eb5,1g5,2d5,3c5,4ab4,2,.5g5,.5bb5,.5c6,.5eb6,2f6,1b5,3eb6,1d6,1d5,1c6,1c5,2bb5", .125),
+        ])
     ]);
-    running = true;
-    scene.hud.satus = GameStatus.run;
+    Sfx.mixer("music").gain.value = .5;
+    music = Sfx.play("music", true, "music");
+}
+
+on(window, "load", async () => {
+    bind();
+    await Sprite.load(require("./assets/texture.png"), require("./assets/texture.json"));
+    await Sprite.tint(ctx, .8, .3, .1); // brown
+    await Sprite.tint(ctx, .4, .9, .4); // green
+    await Sprite.tint(ctx, 1, .7, 0); // yellow
+    await Sprite.tint(ctx, .1, 1, 1); // cyan
+    await Sprite.tint(ctx, .8, .1, 1); // purple
+    await Sprite.tint(ctx, 1, .2, .2); // red
+    canvas.width = config.cam.width;
+    canvas.height = config.cam.height;
+    canvas.style.display = "block";
+    update();
+    render();
+});
+
+on(document.body, "mousedown", async () => {
+    if (!running) {
+        init();
+        return;
+    }
+    switch (scene.hud.satus) {
+        case GameStatus.run:
+            if (music instanceof AudioBufferSourceNode) {
+                music.stop();
+            }
+            break;
+        case GameStatus.start:
+            scene.hud.satus = GameStatus.run;
+            break;
+        case GameStatus.win:
+            map = new TileMap(++level);
+            scene = new GameScene(hero, map);
+            break;
+        default:
+            level = 0;
+            hero = new Hero(config.hero);
+            map = new TileMap(level);
+            scene = new GameScene(hero, map);
+            break;
+    }
 });

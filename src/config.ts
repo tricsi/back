@@ -46,7 +46,7 @@ export default {
                 spd: 0.4,
                 dmg: 25,
                 size: 6,
-                color: 0
+                color: 4
             }
         },
         gnd: {
@@ -81,7 +81,7 @@ export default {
                 spd: 0.1,
                 dmg: 10,
                 size: 6,
-                color: 4
+                color: 3
             }
         }
     },

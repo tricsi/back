@@ -52,7 +52,7 @@ export default class GameScene extends GameObject {
             this.addChild(item);
         }
         for (const pos of this.map.getPosByTile(Tile.AMMO)) {
-            let item = new AmmoBox(this.hero, 100, 1, 0);
+            let item = new AmmoBox(this.hero, 100, 1, 2);
             item.pos.set(pos);
             this.addChild(item);
         }
@@ -69,6 +69,8 @@ export default class GameScene extends GameObject {
         this.addChild(this.hero)
             .addChild(this.explos);
         this.bind();
+        // this.cam.pos.y = 1800;
+        // this.hero.pos.y = 1900;
     }
 
     bind() {

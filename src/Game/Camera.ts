@@ -30,14 +30,7 @@ export default class Camera extends GameObject {
             hero.lives--;
             this.emit(new GameEvent("death", hero));
         }
-        if (!this.move) {
-            return;
-        }
         this.pos.y += this.spd * delta;
-        if (this.pos.y + this.box.height > this.bottom) {
-            this.pos.y = this.bottom - this.box.height;
-            this.move = false;
-        }
     }
 
 }
