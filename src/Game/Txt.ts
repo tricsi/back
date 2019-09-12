@@ -25,12 +25,20 @@ export default class Txt extends GameObject {
         const box = new Box(this.pos.clone(), this.width, this.height);
         for (let i = 0; i < this._text.length; i++) {
             let char = this._text.charCodeAt(i);
-            if (char >= 48 && char <= 57) {
+            if (char < 32) {
+                box.pos.y += this.height;
+                box.pos.x = this.pos.x;
+                continue;
+            } else if (char >= 48 && char <= 57) {
                 char -= 48;
             } else if (char >= 97 && char <= 122) {
                 char -= 87;
             } else if (char >= 65 && char <= 90) {
                 char -= 55;
+            } else if (char === 44) {
+                char = 37;
+            } else if (char === 46) {
+                char = 36;
             } else {
                 box.pos.x += this.width;
                 continue;

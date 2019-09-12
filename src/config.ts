@@ -40,7 +40,7 @@ export default {
         delay: 3000,
         gun: {
             frq: 80,
-            amm: 9999,
+            amm: 99999,
             mag: 0,
             bul: {
                 spd: 0.4,
@@ -55,7 +55,7 @@ export default {
             mag: 10,
             bul: {
                 spd: 0.2,
-                dmg: 50,
+                dmg: 150,
                 size: 10,
                 color: 2,
                 radius: 48

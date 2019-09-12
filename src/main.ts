@@ -7,6 +7,7 @@ import config from "./config";
 import { GameStatus } from "./Game/Hud";
 import { TileMap } from "./Game/TileMap";
 import Hero from "./Game/Hero";
+import IntroScene from "./Game/IntroScene";
 
 const canvas = $("#game") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d");
@@ -14,23 +15,24 @@ const keys: boolean[] = [];
 let level: number = 0;
 let map = new TileMap(level);
 let hero = new Hero(config.hero);
+let intro = new IntroScene();
 let scene = new GameScene(hero, map);
 let time = new Date().getTime();
 let running = false;
 let music: AudioBufferSourceNode = null;
 
-function render() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    scene.render(ctx);
-}
-
 function update() {
     const now = new Date().getTime();
     const delta = now - time;
-    requestAnimationFrame(update);
-    scene.update(delta < 34 ? delta : 34);
     time = now;
-    render();
+    requestAnimationFrame(update);
+    if (!running) {
+        intro.update(delta);
+        intro.render(ctx);
+        return;
+    }
+    scene.update(delta < 34 ? delta : 34);
+    scene.render(ctx);
 }
 
 function bind() {
@@ -75,7 +77,7 @@ async function init() {
             new Channel(new Sound("square", [.5, .5], 1), "2,2c5,2eb5,1g5,2d5,3c5,4ab4,2,2f4,2g4,1f4,2bb4,1eb4,2g4,2b4,2g4,2,2c5,2eb5,1g5,2d5,3c5,4ab4,2,2g5,3bb5,3eb6,2d6,2bb5,2c6,2,2c5,2eb5,1g5,2d5,3c5,4ab4,2,2f4,2g4,1f4,2bb4,1eb4,2g4,2b4,2g4,2,2c5,2eb5,1g5,2d5,3c5,4ab4,2,.5g5,.5bb5,.5c6,.5eb6,2f6,1b5,3eb6,1d6,1d5,1c6,1c5,2bb5", .125),
         ])
     ]);
-    Sfx.mixer("music").gain.value = .5;
+    Sfx.mixer("music").gain.value = .2;
     music = Sfx.play("music", true, "music");
 }
 
@@ -92,19 +94,14 @@ on(window, "load", async () => {
     canvas.height = config.cam.height;
     canvas.style.display = "block";
     update();
-    render();
 });
 
 on(document.body, "mousedown", async () => {
     if (!running) {
         init();
-        return;
     }
     switch (scene.hud.satus) {
         case GameStatus.run:
-            if (music instanceof AudioBufferSourceNode) {
-                music.stop();
-            }
             break;
         case GameStatus.start:
             scene.hud.satus = GameStatus.run;
