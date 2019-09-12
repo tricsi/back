@@ -12,4 +12,11 @@ FIRE: Left click
 BOMB: Right click
 ```
 
+## Credits
+```
+Game & Level Design: Alíz Gordos
+Music: Balázs Szőlőskei
+Game Development: Csaba Csecskedi
+```
+
 [[PLAY]](https://tricsi.github.io/back/dist/)
