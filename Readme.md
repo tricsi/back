@@ -15,7 +15,7 @@ MUSIC on/off: Space
 
 ## Credits
 ```
-Game & Level Design: Aliz
+Game & Level Design: Tayrassin
 Music: Gotshi
 Game Development: Tricsi
 ```
