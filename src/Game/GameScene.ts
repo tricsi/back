@@ -15,7 +15,7 @@ import sfx from "../sfx";
 export default class GameScene extends GameObject {
 
     cam = new Camera(this.hero, config.cam, this.map.bottom);
-    hud = new Hud(this.hero, this.cam);
+    hud = new Hud(this.hero, this.cam, this.map);
     aim = new Vec();
     holes: EnemySpawner[] = [];
     camps: ObjectPool = new ObjectPool(() => new EnemyCamper(this.hero, config.camp));
@@ -69,8 +69,6 @@ export default class GameScene extends GameObject {
         this.addChild(this.hero)
             .addChild(this.explos);
         this.bind();
-        // this.cam.pos.y = 1800;
-        // this.hero.pos.y = 1900;
     }
 
     bind() {

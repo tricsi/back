@@ -111,8 +111,11 @@ on(document.body, "mousedown", async () => {
             scene.hud.satus = GameStatus.run;
             break;
         case GameStatus.win:
-            scene = new GameScene(hero, new TileMap(++level));
-            break;
+            if (++level < TileMap.MAPS.length) {
+                hero.reset();
+                scene = new GameScene(hero, new TileMap(level));
+                break;
+            }
         default:
             level = 0;
             hero = new Hero(config.hero);

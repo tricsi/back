@@ -3,6 +3,7 @@ import Hero from "./Hero";
 import Txt from "./Txt";
 import { Vec } from "./Math";
 import Camera from "./Camera";
+import { TileMap } from "./TileMap";
 
 export enum GameStatus {
     start = 0,
@@ -16,10 +17,16 @@ export default class Hud extends GameObject {
     satus = GameStatus.start;
     text = new Txt(new Vec(3));
     message = new Txt(new Vec(32, 120));
-    messages: string[] = ["Click to Start", "", "Game Over", "Level Complete"];
+    messages: string[];
 
-    constructor(public hero: Hero, public cam: Camera) {
+    constructor(public hero: Hero, public cam: Camera, map: TileMap) {
         super();
+        this.messages = [
+            "Click to Start",
+            "",
+            "Game Over",
+            map.last ? "The End" : `Level ${map.level + 1} Complete`
+        ];
         this.addChild(this.text)
             .addChild(this.message);
         this.update(0);

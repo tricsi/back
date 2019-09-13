@@ -42,6 +42,10 @@ export class TileMap extends GameObject {
         return this.height * this.size;
     }
 
+    get last(): boolean {
+        return this.level >= TileMap.MAPS.length - 1;
+    }
+
     constructor(public level: number) {
         super();
         const maps = TileMap.MAPS;

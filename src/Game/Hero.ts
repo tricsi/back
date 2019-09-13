@@ -21,6 +21,7 @@ export default class Hero extends GameObject implements IMovable, IKillable {
     delay: number;
     time: number = 0;
     resist: number = 0;
+    ouch: number = 0;
 
     get alive(): boolean {
         return this.lives > 0;
@@ -55,13 +56,17 @@ export default class Hero extends GameObject implements IMovable, IKillable {
             frame = anim < 200 / 2 ? 1 : 2;
             flip = look.x > 0;
         }
-        const name = this.resist % 500 > 250 ? "hero" : "hero2";
+        let name = this.resist % 500 > 250 ? "hero" : "hero2";
+        if (this.ouch > 0) {
+            name = "hero6";
+        }
         Sprite.draw(ctx, name, this.box, frame, flip);
     }
 
     update(delta: number) {
         super.update(delta);
         this.resist -= delta;
+        this.ouch -= delta;
         if (this.dir.length) {
             this.time += delta;
         }
@@ -94,6 +99,7 @@ export default class Hero extends GameObject implements IMovable, IKillable {
         }
         this.hp -= hp;
         if (this.hp > 0) {
+            this.ouch = 250;
             return;
         }
         if (--this.lives > 0) {
@@ -104,6 +110,12 @@ export default class Hero extends GameObject implements IMovable, IKillable {
         }
         this.hp = 0;
         this.emit(new GameEvent("lose", this));
+    }
+
+
+    reset() {
+        this.gun.clear();
+        this.grenades.clear();
     }
 
 }

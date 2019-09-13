@@ -128,6 +128,11 @@ export class ObjectPool extends GameObject {
         this.pool.push(item);
     }
 
+    clear() {
+        while (this.children.length) {
+            this.removeChild(this.children[0]);
+        }
+    }
 }
 
 export class ObjectSpawner extends ObjectPool
