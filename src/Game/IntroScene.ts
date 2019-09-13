@@ -11,7 +11,7 @@ export default class IntroScene extends GameObject {
         "it. Not so far away from the meteor,\n" +
         "the alien lifeform has been settled\n" +
         "in a cave.\n\n" +
-        "An elite squad of 3 men have beeen\n" +
+        "An elite squad of 3 men have been\n" +
         "sent to the cave to secure the area\n" +
         "for further research.\n\n" +
         "But then suddenly..."

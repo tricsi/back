@@ -13,13 +13,13 @@ const canvas = $("#game") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d");
 const keys: boolean[] = [];
 let level: number = 0;
-let map = new TileMap(level);
 let hero = new Hero(config.hero);
 let intro = new IntroScene();
-let scene = new GameScene(hero, map);
+let scene = new GameScene(hero, new TileMap(level));
 let time = new Date().getTime();
 let running = false;
 let music: AudioBufferSourceNode = null;
+const volume = 0.2;
 
 function update() {
     const now = new Date().getTime();
@@ -40,6 +40,10 @@ function bind() {
     on(document, "keydown", (e: KeyboardEvent) => {
         keys[e.keyCode] = true;
         scene.input(keys, true);
+        if (music && e.keyCode === 32) {
+            const gain = Sfx.mixer("music").gain;
+            gain.value = gain.value ? 0 : volume;
+        }
     });
     on(document, "keyup", (e: KeyboardEvent) => {
         keys[e.keyCode] = false;
@@ -77,7 +81,7 @@ async function init() {
             new Channel(new Sound("square", [.5, .5], 1), "2,2c5,2eb5,1g5,2d5,3c5,4ab4,2,2f4,2g4,1f4,2bb4,1eb4,2g4,2b4,2g4,2,2c5,2eb5,1g5,2d5,3c5,4ab4,2,2g5,3bb5,3eb6,2d6,2bb5,2c6,2,2c5,2eb5,1g5,2d5,3c5,4ab4,2,2f4,2g4,1f4,2bb4,1eb4,2g4,2b4,2g4,2,2c5,2eb5,1g5,2d5,3c5,4ab4,2,.5g5,.5bb5,.5c6,.5eb6,2f6,1b5,3eb6,1d6,1d5,1c6,1c5,2bb5", .125),
         ])
     ]);
-    Sfx.mixer("music").gain.value = .2;
+    Sfx.mixer("music").gain.value = volume;
     music = Sfx.play("music", true, "music");
 }
 
@@ -107,14 +111,12 @@ on(document.body, "mousedown", async () => {
             scene.hud.satus = GameStatus.run;
             break;
         case GameStatus.win:
-            map = new TileMap(++level);
-            scene = new GameScene(hero, map);
+            scene = new GameScene(hero, new TileMap(++level));
             break;
         default:
             level = 0;
             hero = new Hero(config.hero);
-            map = new TileMap(level);
-            scene = new GameScene(hero, map);
+            scene = new GameScene(hero, new TileMap(level));
             break;
     }
 });
