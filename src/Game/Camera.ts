@@ -27,8 +27,7 @@ export default class Camera extends GameObject {
             hero.alive &&
             hero.box.bottom <= this.pos.y
         ) {
-            hero.lives--;
-            this.emit(new GameEvent("death", hero));
+            hero.hit(100);
         }
         this.pos.y += this.spd * delta;
     }
