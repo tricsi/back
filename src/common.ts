@@ -24,8 +24,8 @@ export class Rand {
 export enum Input {
     FIRE = 0,
     ALT = 2,
-    LEFT = 65,
-    RIGHT = 68,
-    UP = 87,
-    DOWN = 83,
+    LEFT = 'KeyA',
+    RIGHT = 'KeyD',
+    UP = 'KeyW',
+    DOWN = 'KeyS',
 }

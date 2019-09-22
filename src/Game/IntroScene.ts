@@ -41,5 +41,5 @@ export default class IntroScene extends GameObject {
 
     pointer(x: number, y: number) {}
 
-    input(keys: boolean[], down: boolean) {}
+    input(keys: {[s:string]:boolean, [s:number]: boolean}, down: boolean) {}
 }
