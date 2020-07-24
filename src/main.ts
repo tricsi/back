@@ -11,7 +11,7 @@ import IntroScene from "./Game/IntroScene";
 
 const canvas = $("#game") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d");
-const keys: boolean[] = [];
+const keys: {[s: string]: boolean, [s:number]: boolean} = {};
 let level: number = 0;
 let hero = new Hero(config.hero);
 let intro = new IntroScene();
@@ -38,7 +38,7 @@ function update() {
 function bind() {
     const body = document.body;
     on(document, "keydown", (e: KeyboardEvent) => {
-        keys[e.keyCode] = true;
+        keys[e.code] = true;
         scene.input(keys, true);
         if (music && e.keyCode === 32) {
             const gain = Sfx.mixer("music").gain;
@@ -46,7 +46,7 @@ function bind() {
         }
     });
     on(document, "keyup", (e: KeyboardEvent) => {
-        keys[e.keyCode] = false;
+        keys[e.code] = false;
         scene.input(keys, false);
     })
     on(body, "mousedown", (e: MouseEvent) => {

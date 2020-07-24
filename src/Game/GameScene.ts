@@ -233,7 +233,7 @@ export default class GameScene extends GameObject {
         this.aim.set(x, y);
     }
 
-    input(keys: boolean[], down: boolean) {
+    input(keys: {[s:string]: boolean, [s:number]: boolean}, down: boolean) {
         let x = 0;
         let y = 0;
         if (keys[Input.LEFT]) {
